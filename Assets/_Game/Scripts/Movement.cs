@@ -1,9 +1,11 @@
+using Unity.Mathematics;
 using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
     [SerializeField] private Joystick joystick;
     [SerializeField] private float speed = 5f;
+    [SerializeField] private float rotationSpeed = 540f; 
 
     private Rigidbody rb;
     private Vector3 move;
@@ -11,7 +13,9 @@ public class Movement : MonoBehaviour
 
     void Awake()
     {
+        Application.targetFrameRate = 60;
         rb = GetComponent<Rigidbody>();
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
         cam = Camera.main.transform; 
     }
 
@@ -24,15 +28,22 @@ public class Movement : MonoBehaviour
         forward.Normalize(); 
         right.Normalize(); 
         move = forward*joystick.Vertical + right*joystick.Horizontal;
+        if (move.sqrMagnitude > 1f)
+        {
+            move.Normalize();
+        }
     }
 
     void FixedUpdate()
     {
-        rb.MovePosition(rb.position + move * speed * Time.fixedDeltaTime);
+        Vector3 targetVelocity = move * speed;
+        targetVelocity.y = rb.linearVelocity.y;
+        rb.linearVelocity = targetVelocity;
 
         if (move.sqrMagnitude > 0.01f)
         {
-            transform.forward = move;
+            Quaternion target = Quaternion.LookRotation(move);
+            rb.rotation = Quaternion.RotateTowards(rb.rotation, target, rotationSpeed * Time.fixedDeltaTime);
         }
     }
 }

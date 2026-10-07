@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[DefaultExecutionOrder(-100)]
 public class CameraTargetController : MonoBehaviour
 {
     [SerializeField] private Transform player;
@@ -13,8 +14,18 @@ public class CameraTargetController : MonoBehaviour
     private float yaw;
     private float pitch = 12f;
 
+    void Awake()
+    {
+        transform.SetParent(null);
+        yaw = transform.eulerAngles.y;
+    }
+
     void LateUpdate()
     {
+        if (player == null) return;
+
+        // Se ejecuta en LateUpdate con DefaultExecutionOrder(-100)
+        // para posicionarse DESPUÉS de la interpolación de física pero ANTES de CinemachineBrain.
         transform.position = player.position + Vector3.up * heightOffset;
 
         if (lookJoystick != null)
@@ -27,3 +38,4 @@ public class CameraTargetController : MonoBehaviour
         transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
     }
 }
+
