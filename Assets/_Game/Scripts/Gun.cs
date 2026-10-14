@@ -27,6 +27,8 @@ public class Gun : MonoBehaviour
     private AudioSource shotAudioSource;
     private AudioClip generatedShotClip;
     private ParticleSystem impactEffect;
+    private Movement playerMovement;
+    private Transform lastParent;
     private readonly RaycastHit[] raycastResults = new RaycastHit[32];
 
     public int AmmunitionInMagazine => ammunitionInMagazine;
@@ -38,8 +40,10 @@ public class Gun : MonoBehaviour
     private void Awake()
     {
         if (ammunitionInventory == null) ammunitionInventory = GetComponent<AmmoInventory>();
+        playerMovement = GetComponentInParent<Movement>();
         ammunitionInMagazine = Mathf.Clamp(ammunitionInMagazine, 0, magazineCapacity);
         restingLocalPosition = transform.localPosition;
+        lastParent = transform.parent;
 
         shotAudioSource = GetComponent<AudioSource>();
         if (shotAudioSource == null) shotAudioSource = gameObject.AddComponent<AudioSource>();
@@ -50,6 +54,14 @@ public class Gun : MonoBehaviour
 
     private void Update()
     {
+        // La pistola cambia de padre al equiparse y al guardarse. Su posición base
+        // debe actualizarse para que el retroceso no la saque de la mano.
+        if (transform.parent != lastParent)
+        {
+            lastParent = transform.parent;
+            restingLocalPosition = transform.localPosition;
+        }
+
         currentRecoil = Mathf.MoveTowards(currentRecoil, 0f, recoilReturnSpeed * Time.deltaTime);
         transform.localPosition = restingLocalPosition - Vector3.forward * currentRecoil;
     }
@@ -77,6 +89,10 @@ public class Gun : MonoBehaviour
     public void Shoot()
     {
         if (ammunitionInMagazine <= 0 || Time.time < nextShotTime) return;
+
+        // Disparar también saca la pistola y pone al personaje en pose de apuntado.
+        playerMovement?.EquiparPistola();
+        playerMovement?.SetApuntando(true);
 
         Transform shotOrigin = muzzle != null ? muzzle : transform;
         ammunitionInMagazine--;

@@ -9,6 +9,11 @@ public class Lantern : MonoBehaviour
     [SerializeField] private bool linternaEncendida = false;
     [Tooltip("Dejar en -1 para usar automáticamente la intensidad configurada en el componente Light")]
     [SerializeField] private float intensidadMaxima = -1f;
+    [Header("Haz de la linterna")]
+    [SerializeField, Min(1f)] private float alcanceHaz = 10f;
+    [SerializeField, Range(10f, 80f)] private float anguloHaz = 24f;
+    [SerializeField, Range(5f, 70f)] private float anguloInteriorHaz = 11f;
+    [SerializeField, Range(0f, 25f)] private float inclinacionHaciaAbajo = 6f;
 
     [Header("Batería")]
     [SerializeField] private float batMax = 100f;
@@ -35,6 +40,7 @@ public class Lantern : MonoBehaviour
 
     private bool estaParpadeando = false;
     private float intensidadOriginal;
+    private Movement playerMovement;
 
     // Propiedad pública de solo lectura para acceder a la batería actual
     public float BateriaActual => bateria;
@@ -46,11 +52,18 @@ public class Lantern : MonoBehaviour
         if (linterna == null)
             linterna = GetComponentInChildren<Light>();
 
+        playerMovement = GetComponentInParent<Movement>();
+
         if (linterna != null)
         {
             // Usar la intensidad configurada en el componente Light (en URP suele ser 1000+ lúmenes)
             intensidadOriginal = (intensidadMaxima > 0) ? intensidadMaxima : linterna.intensity;
             if (intensidadMaxima <= 0) intensidadMaxima = linterna.intensity;
+            linterna.type = LightType.Spot;
+            linterna.range = alcanceHaz;
+            linterna.spotAngle = anguloHaz;
+            linterna.innerSpotAngle = Mathf.Min(anguloInteriorHaz, anguloHaz);
+            linterna.color = new Color(1f, 0.97f, 0.91f);
             linterna.enabled = linternaEncendida;
         }
 
@@ -63,6 +76,7 @@ public class Lantern : MonoBehaviour
     void Start()
     {
         ActualizarIntensidadYLuz();
+        playerMovement?.SetLinternaEnMano(linternaEncendida);
         OnBateriaCambiada?.Invoke(BateriaPorcentaje);
         OnLinternaEstadoCambiado?.Invoke(linternaEncendida);
     }
@@ -92,6 +106,18 @@ public class Lantern : MonoBehaviour
         {
             ConsumirBateria();
         }
+    }
+
+    private void LateUpdate()
+    {
+        if (!linternaEncendida || linterna == null) return;
+
+        // El modelo importado traía el Spot Light rotado de lado. Hacemos que el
+        // cono salga hacia delante del personaje y caiga un poco sobre el suelo.
+        Vector3 forward = playerMovement != null ? playerMovement.transform.forward : transform.forward;
+        Vector3 beamDirection = (forward - Vector3.up * Mathf.Tan(inclinacionHaciaAbajo * Mathf.Deg2Rad)).normalized;
+        if (beamDirection.sqrMagnitude > 0.001f)
+            linterna.transform.rotation = Quaternion.LookRotation(beamDirection, Vector3.up);
     }
 
     private void ConsumirBateria()
@@ -169,6 +195,7 @@ public class Lantern : MonoBehaviour
     {
         linternaEncendida = false;
         if (linterna != null) linterna.enabled = false;
+        playerMovement?.SetLinternaEnMano(false);
 
         if (audioSource != null && sonidoApagadoBateria != null)
         {
@@ -192,6 +219,7 @@ public class Lantern : MonoBehaviour
         }
 
         linternaEncendida = !linternaEncendida;
+        playerMovement?.SetLinternaEnMano(linternaEncendida);
 
         if (linterna != null)
         {
