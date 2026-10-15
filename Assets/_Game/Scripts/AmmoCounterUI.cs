@@ -1,22 +1,41 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
-/// <summary>Displays the current pistol magazine and reserve ammunition.</summary>
+/// <summary>
+/// Shows the pistol magazine as a row of bullet icons (left to right),
+/// one icon per bullet. Reserve ammunition can optionally stay as text.
+/// </summary>
 public class AmmoCounterUI : MonoBehaviour
 {
     [SerializeField] private Gun gun;
-    [SerializeField] private TMP_Text displayText;
+
+    [Header("Balas del cargador")]
+    [SerializeField] private Sprite bulletSprite;
+    [Tooltip("Contenedor donde se crean las balas. Si se deja vacío usa este mismo objeto.")]
+    [SerializeField] private RectTransform bulletContainer;
+    [SerializeField] private Vector2 bulletSize = new Vector2(24f, 48f);
+    [SerializeField] private float spacing = 4f;
+
+    [Header("Reserva (opcional)")]
+    [SerializeField] private TMP_Text reserveText;
+
+    private readonly List<Image> bullets = new List<Image>();
 
     private void Start()
     {
         if (gun == null) gun = FindFirstObjectByType<Gun>();
-        if (displayText == null) displayText = GetComponent<TMP_Text>();
+        if (bulletContainer == null) bulletContainer = transform as RectTransform;
 
-        if (gun == null || displayText == null)
+        if (gun == null || bulletContainer == null || bulletSprite == null)
         {
-            Debug.LogWarning("AmmoCounterUI necesita una Gun y un texto TMP.", this);
+            Debug.LogWarning("AmmoCounterUI necesita una Gun, un contenedor y un Bullet Sprite.", this);
             return;
         }
+
+        SetupLayout();
+        EnsureBullets(gun.MagazineCapacity);
 
         gun.AmmunitionChanged += UpdateDisplay;
         UpdateDisplay(gun.AmmunitionInMagazine, gun.ReserveAmmo);
@@ -27,9 +46,52 @@ public class AmmoCounterUI : MonoBehaviour
         if (gun != null) gun.AmmunitionChanged -= UpdateDisplay;
     }
 
+    // The layout group places the active bullets from left to right.
+    // Inactive bullets are ignored, so the row shrinks from the right.
+    private void SetupLayout()
+    {
+        HorizontalLayoutGroup layout = bulletContainer.GetComponent<HorizontalLayoutGroup>();
+        if (layout == null) layout = bulletContainer.gameObject.AddComponent<HorizontalLayoutGroup>();
+
+        layout.childAlignment = TextAnchor.MiddleLeft;
+        layout.spacing = spacing;
+        layout.childControlWidth = false;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
+    }
+
+    private void EnsureBullets(int count)
+    {
+        while (bullets.Count < count)
+        {
+            GameObject bulletObject = new GameObject("Bullet", typeof(RectTransform), typeof(Image));
+            bulletObject.transform.SetParent(bulletContainer, false);
+
+            RectTransform rect = (RectTransform)bulletObject.transform;
+            rect.sizeDelta = bulletSize;
+
+            Image image = bulletObject.GetComponent<Image>();
+            image.sprite = bulletSprite;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+
+            bullets.Add(image);
+        }
+    }
+
     private void UpdateDisplay(int magazine, int reserve)
     {
-        if (displayText != null && gun != null)
-            displayText.text = $"CARGADOR  {magazine} / {gun.MagazineCapacity}\nRESERVA    {reserve}";
+        EnsureBullets(magazine);
+
+        for (int i = 0; i < bullets.Count; i++)
+        {
+            bool shouldShow = i < magazine;
+            if (bullets[i].gameObject.activeSelf != shouldShow)
+                bullets[i].gameObject.SetActive(shouldShow);
+        }
+
+        if (reserveText != null)
+            reserveText.text = $"RESERVA    {reserve}";
     }
 }
