@@ -5,7 +5,7 @@ public class Movement : MonoBehaviour
 {
     [SerializeField] private Joystick joystick;
     [SerializeField] private float speed = 5f;
-    [SerializeField] private float rotationSpeed = 540f; 
+    [SerializeField] private float rotationSpeed = 540f;
     [SerializeField, Range(0f, 0.5f)] private float movementDeadZone = 0.15f;
     [SerializeField] private Animator animator;
 
@@ -29,7 +29,7 @@ public class Movement : MonoBehaviour
 
     private Rigidbody rb;
     private Vector3 move;
-    private Transform cam; 
+    private Transform cam;
     private Transform rightHand;
     private Transform leftHand;
     private Gun testGun;
@@ -40,13 +40,14 @@ public class Movement : MonoBehaviour
     private bool returnBatonAfterAnimation;
     private bool batonAnimationStarted;
     private bool pistolPoseActive;
+    private bool flashlightPoseActive;
 
     void Awake()
     {
         Application.targetFrameRate = 60;
         rb = GetComponent<Rigidbody>();
         rb.interpolation = RigidbodyInterpolation.Interpolate;
-        cam = Camera.main.transform; 
+        cam = Camera.main.transform;
 
         // El Animator está en el modelo, que es hijo del objeto Player.
         // Si no se asignó desde el Inspector, lo buscamos en los hijos.
@@ -74,12 +75,12 @@ public class Movement : MonoBehaviour
 
     void Update()
     {
-        Vector3 forward = cam.forward; 
-        Vector3 right = cam.right; 
-        forward.y = 0f; 
+        Vector3 forward = cam.forward;
+        Vector3 right = cam.right;
+        forward.y = 0f;
         right.y = 0f;
-        forward.Normalize(); 
-        right.Normalize(); 
+        forward.Normalize();
+        right.Normalize();
         float verticalInput = joystick != null ? joystick.Vertical : 0f;
         float horizontalInput = joystick != null ? joystick.Horizontal : 0f;
 #if UNITY_EDITOR
@@ -140,13 +141,24 @@ public class Movement : MonoBehaviour
 
     void LateUpdate()
     {
-        // Conservamos los offsets locales de posición y rotación relativos a la mano.
-        if (!pistolPoseActive || rightHand == null) return;
+        if (rightHand == null) return;
 
+        // Conservamos los offsets locales de posición y rotación relativos a la mano.
         // Mantiene el offset sincronizado con el Inspector durante Play Mode,
         // así se puede ajustar la posición sin guardar y volver a equipar.
-        pistolProp?.SetLocalPosition(pistolHandPosition);
-        pistolProp?.SetLocalRotation(Quaternion.Euler(pistolHandRotation));
+        if (pistolPoseActive)
+        {
+            pistolProp?.SetLocalPosition(pistolHandPosition);
+            pistolProp?.SetLocalRotation(Quaternion.Euler(pistolHandRotation));
+        }
+
+        // Igual para la linterna: los campos Flashlight Hand Position/Rotation
+        // se ven en vivo mientras se prueba en Play Mode.
+        if (flashlightPoseActive)
+        {
+            flashlightProp?.SetLocalPosition(flashlightHandPosition);
+            flashlightProp?.SetLocalRotation(Quaternion.Euler(flashlightHandRotation));
+        }
     }
 
     void FixedUpdate()
@@ -219,8 +231,17 @@ public class Movement : MonoBehaviour
     public void SetLinternaEnMano(bool enMano)
     {
         SetBool(FlashlightInHandParameter, enMano);
-        if (enMano) flashlightProp?.AttachTo(leftHand, flashlightHandPosition, flashlightHandRotation);
-        else flashlightProp?.Restore();
+        if (enMano)
+        {
+            // La animación de la linterna la sostiene con la mano derecha.
+            flashlightProp?.AttachTo(rightHand, flashlightHandPosition, flashlightHandRotation);
+            flashlightPoseActive = flashlightProp != null && rightHand != null;
+        }
+        else
+        {
+            flashlightPoseActive = false;
+            flashlightProp?.Restore();
+        }
     }
 
     public void GolpearConBolillo()
