@@ -138,6 +138,37 @@ public class Movement : MonoBehaviour
 #endif
 
     }
+    private static readonly int ShootParameter = Animator.StringToHash("Disparo");
+    private int lastMagazine = -1;
+
+    void Start()
+    {
+        if (testGun == null) testGun = FindAnyObjectByType<Gun>();
+        if (testGun != null)
+        {
+            lastMagazine = testGun.AmmunitionInMagazine;
+            testGun.AmmunitionChanged += OnAmmunitionChanged;
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (testGun != null) testGun.AmmunitionChanged -= OnAmmunitionChanged;
+    }
+
+    // Si el cargador baja, es porque se disparó una bala.
+    private void OnAmmunitionChanged(int magazine, int reserve)
+    {
+        if (magazine < lastMagazine) AnimarDisparo();
+        lastMagazine = magazine;
+    }
+
+    public void AnimarDisparo()
+    {
+        // Solo animamos si el personaje está apuntando; si no, el Trigger quedaría guardado.
+        if (animator != null && animator.GetBool(AimingParameter))
+            animator.SetTrigger(ShootParameter);
+    }
 
     void LateUpdate()
     {

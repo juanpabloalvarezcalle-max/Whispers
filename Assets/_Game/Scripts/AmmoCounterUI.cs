@@ -25,7 +25,7 @@ public class AmmoCounterUI : MonoBehaviour
 
     private void Start()
     {
-        if (gun == null) gun = FindFirstObjectByType<Gun>();
+        if (gun == null) gun = FindAnyObjectByType<Gun>();
         if (bulletContainer == null) bulletContainer = transform as RectTransform;
 
         if (gun == null || bulletContainer == null || bulletSprite == null)
@@ -45,9 +45,6 @@ public class AmmoCounterUI : MonoBehaviour
     {
         if (gun != null) gun.AmmunitionChanged -= UpdateDisplay;
     }
-
-    // The layout group places the active bullets from left to right.
-    // Inactive bullets are ignored, so the row shrinks from the right.
     private void SetupLayout()
     {
         HorizontalLayoutGroup layout = bulletContainer.GetComponent<HorizontalLayoutGroup>();
