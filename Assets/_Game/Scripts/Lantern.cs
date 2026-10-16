@@ -271,6 +271,13 @@ public class Lantern : MonoBehaviour
     }
     public void CambiarLinterna()
     {
+        if (playerMovement != null && playerMovement.PistolaSacada)
+        {
+            reanudarTrasArma = true;
+            playerMovement.GuardarPistola();
+            ReproducirClick();
+            return;
+        }
         // Si no hay batería, no se puede encender
         if (!linternaEncendida && bateria <= 0f)
         {

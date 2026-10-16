@@ -45,7 +45,7 @@ public class Movement : MonoBehaviour
     private Lantern lantern;
     private bool armaSacada;
     private float guardarArmaEn;
-    public bool PistolaSacada => armaSacada;
+    public bool PistolaSacada => armaSacada || (animator != null && animator.GetBool(AimingParameter));
 
     void Awake()
     {
