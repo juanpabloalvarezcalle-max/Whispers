@@ -271,6 +271,7 @@ public class Lantern : MonoBehaviour
     }
     public void CambiarLinterna()
     {
+        if (playerMovement != null && playerMovement.RadioEnUso) return;
         if (playerMovement != null && playerMovement.PistolaSacada)
         {
             reanudarTrasArma = true;

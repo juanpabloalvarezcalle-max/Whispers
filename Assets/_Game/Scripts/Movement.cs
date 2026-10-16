@@ -47,6 +47,26 @@ public class Movement : MonoBehaviour
     private float guardarArmaEn;
     public bool PistolaSacada => armaSacada || (animator != null && animator.GetBool(AimingParameter));
 
+    [Header("Radio")]
+    [Tooltip("Nombre exacto del estado de la radio en el Animator.")]
+    [SerializeField] private string radioStateName = "BrazosRadio";
+    [Tooltip("Nombre exacto de la capa de brazos en el Animator.")]
+    [SerializeField] private string armsLayerName = "Brazos";
+    [Tooltip("Punto del clip (0 = inicio, 1 = final) en que la mano agarra la radio.")]
+    [SerializeField, Range(0f, 1f)] private float radioTomadaEn = 0.25f;
+    [Tooltip("Punto del clip (0 = inicio, 1 = final) en que la radio vuelve a la cintura.")]
+    [SerializeField, Range(0f, 1f)] private float radioGuardadaEn = 0.8f;
+
+    private static readonly int RadioTriggerParameter = Animator.StringToHash("Radio");
+    private int radioStateHash;
+    private int armsLayer = -1;
+    private bool radioEnUso;
+    private bool radioEntroAlEstado;
+    private bool radioPoseActive;
+    private float radioInicio;
+
+    public bool RadioEnUso => radioEnUso;
+
     void Awake()
     {
         Application.targetFrameRate = 60;
@@ -73,6 +93,8 @@ public class Movement : MonoBehaviour
         testGun = GetComponentInChildren<Gun>();
         lantern = GetComponentInChildren<Lantern>(true);
         if (lantern == null) lantern = FindFirstObjectByType<Lantern>();
+        radioStateHash = Animator.StringToHash(radioStateName);
+        if (animator != null) armsLayer = animator.GetLayerIndex(armsLayerName);
 
         if (animator != null)
         {
@@ -121,6 +143,7 @@ public class Movement : MonoBehaviour
         UpdateBatonAttachment();
         if (armaSacada && segundosParaGuardarArma > 0f && Time.time >= guardarArmaEn)
             GuardarPistola();
+            UpdateRadioAttachment();
 
 #if UNITY_EDITOR
         // Teclas de diagnóstico para probar la pose sin usar la interfaz táctil.
@@ -152,21 +175,21 @@ public class Movement : MonoBehaviour
     {
         if (rightHand == null) return;
 
-        // Conservamos los offsets locales de posición y rotación relativos a la mano.
-        // Mantiene el offset sincronizado con el Inspector durante Play Mode,
-        // así se puede ajustar la posición sin guardar y volver a equipar.
         if (pistolPoseActive)
         {
             pistolProp?.SetLocalPosition(pistolHandPosition);
             pistolProp?.SetLocalRotation(Quaternion.Euler(pistolHandRotation));
         }
 
-        // Igual para la linterna: los campos Flashlight Hand Position/Rotation
-        // se ven en vivo mientras se prueba en Play Mode.
         if (flashlightPoseActive)
         {
             flashlightProp?.SetLocalPosition(flashlightHandPosition);
             flashlightProp?.SetLocalRotation(Quaternion.Euler(flashlightHandRotation));
+        }
+        if (radioPoseActive && leftHand != null)
+        {
+            radioProp?.SetLocalPosition(radioHandPosition);
+            radioProp?.SetLocalRotation(Quaternion.Euler(radioHandRotation));
         }
     }
 
@@ -193,8 +216,8 @@ public class Movement : MonoBehaviour
     // Estos métodos son los "enchufes" que llaman los botones y las mecánicas.
     public void EquiparPistola()
     {
-        // La pistola y la linterna comparten la mano derecha.
-        lantern?.ApagarPorArma();
+        if (radioEnUso) TerminarRadio(false);
+        if (lantern != null) lantern.ApagarPorArma();
 
         if (pistolProp != null && rightHand != null)
         {
@@ -230,17 +253,42 @@ public class Movement : MonoBehaviour
         SetApuntando(!apuntando);
     }
 
-    public void SetRadioActivada(bool activada)
+    public void UsarRadio()
     {
-        SetBool(RadioActiveParameter, activada);
-        if (activada) radioProp?.AttachTo(leftHand, radioHandPosition, radioHandRotation);
-        else radioProp?.Restore();
+        if (radioEnUso || animator == null) return;
+
+        // La radio ocupa los brazos: se guarda la pistola y se apaga la linterna mientras dura.
+        if (PistolaSacada) GuardarPistola();
+        lantern?.ApagarPorArma();
+
+        radioEnUso = true;
+        radioEntroAlEstado = false;
+        radioInicio = Time.time;
+        animator.SetTrigger(RadioTriggerParameter);
+
+        // Aquí se conectará el sistema de pistas y diálogo del fantasma cuando exista.
     }
 
-    public void AlternarRadio()
+    public void AlternarRadio() => UsarRadio();
+
+    public void SetRadioActivada(bool activada)
     {
-        bool activada = animator != null && animator.GetBool(RadioActiveParameter);
-        SetRadioActivada(!activada);
+        if (activada) UsarRadio();
+    }
+
+    private void TerminarRadio(bool reanudarLinterna)
+    {
+        radioEnUso = false;
+        radioEntroAlEstado = false;
+        animator?.ResetTrigger(RadioTriggerParameter);
+
+        if (radioPoseActive)
+        {
+            radioPoseActive = false;
+            radioProp?.Restore();
+        }
+
+        if (reanudarLinterna) lantern?.ReanudarTrasArma();
     }
 
     public void SetLinternaEnMano(bool enMano)
@@ -282,6 +330,44 @@ public class Movement : MonoBehaviour
             batonProp?.Restore();
             returnBatonAfterAnimation = false;
             batonAnimationStarted = false;
+        }
+    }
+    private void UpdateRadioAttachment()
+    {
+        if (!radioEnUso || animator == null || armsLayer < 0) return;
+
+        AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(armsLayer);
+
+        if (state.shortNameHash == radioStateHash)
+        {
+            radioEntroAlEstado = true;
+            float progreso = state.normalizedTime;
+
+            if (!radioPoseActive && progreso >= radioTomadaEn && progreso < radioGuardadaEn)
+            {
+                radioProp?.AttachTo(leftHand, radioHandPosition, radioHandRotation);
+                radioPoseActive = radioProp != null && leftHand != null;
+            }
+            else if (radioPoseActive && progreso >= radioGuardadaEn)
+            {
+                radioPoseActive = false;
+                radioProp?.Restore();
+            }
+        }
+        else if (radioEntroAlEstado)
+        {
+            // El clip terminó y el Animator ya salió del estado de la radio.
+            TerminarRadio(true);
+        }
+        else if (Time.time - radioInicio > 1f)
+        {
+            AnimatorClipInfo[] clips = animator.GetCurrentAnimatorClipInfo(armsLayer);
+            string clipActual = clips.Length > 0 ? clips[0].clip.name : "ninguno (estado vacío)";
+            Debug.LogWarning(
+                $"Movement: el Animator no entró a '{radioStateName}' (capa '{armsLayerName}', índice {armsLayer}). " +
+                $"Trigger Radio sin consumir: {animator.GetBool(RadioTriggerParameter)}. " +
+                $"Clip actual: {clipActual}.", this);
+            TerminarRadio(true);
         }
     }
 
