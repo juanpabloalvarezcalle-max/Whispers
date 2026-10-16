@@ -41,6 +41,11 @@ public class Movement : MonoBehaviour
     private bool batonAnimationStarted;
     private bool pistolPoseActive;
     private bool flashlightPoseActive;
+    [SerializeField, Min(0f)] private float segundosParaGuardarArma = 3f;
+    private Lantern lantern;
+    private bool armaSacada;
+    private float guardarArmaEn;
+    public bool PistolaSacada => armaSacada;
 
     void Awake()
     {
@@ -66,6 +71,8 @@ public class Movement : MonoBehaviour
         radioProp = CacheProp(characterRoot, "Radio");
         batonProp = CacheProp(characterRoot, "Bolillo");
         testGun = GetComponentInChildren<Gun>();
+        lantern = GetComponentInChildren<Lantern>(true);
+        if (lantern == null) lantern = FindFirstObjectByType<Lantern>();
 
         if (animator != null)
         {
@@ -112,6 +119,8 @@ public class Movement : MonoBehaviour
         }
 
         UpdateBatonAttachment();
+        if (armaSacada && segundosParaGuardarArma > 0f && Time.time >= guardarArmaEn)
+            GuardarPistola();
 
 #if UNITY_EDITOR
         // Teclas de diagnóstico para probar la pose sin usar la interfaz táctil.
@@ -137,37 +146,6 @@ public class Movement : MonoBehaviour
         }
 #endif
 
-    }
-    private static readonly int ShootParameter = Animator.StringToHash("Disparo");
-    private int lastMagazine = -1;
-
-    void Start()
-    {
-        if (testGun == null) testGun = FindAnyObjectByType<Gun>();
-        if (testGun != null)
-        {
-            lastMagazine = testGun.AmmunitionInMagazine;
-            testGun.AmmunitionChanged += OnAmmunitionChanged;
-        }
-    }
-
-    void OnDestroy()
-    {
-        if (testGun != null) testGun.AmmunitionChanged -= OnAmmunitionChanged;
-    }
-
-    // Si el cargador baja, es porque se disparó una bala.
-    private void OnAmmunitionChanged(int magazine, int reserve)
-    {
-        if (magazine < lastMagazine) AnimarDisparo();
-        lastMagazine = magazine;
-    }
-
-    public void AnimarDisparo()
-    {
-        // Solo animamos si el personaje está apuntando; si no, el Trigger quedaría guardado.
-        if (animator != null && animator.GetBool(AimingParameter))
-            animator.SetTrigger(ShootParameter);
     }
 
     void LateUpdate()
@@ -215,14 +193,16 @@ public class Movement : MonoBehaviour
     // Estos métodos son los "enchufes" que llaman los botones y las mecánicas.
     public void EquiparPistola()
     {
+        // La pistola y la linterna comparten la mano derecha.
+        lantern?.ApagarPorArma();
+
         if (pistolProp != null && rightHand != null)
         {
-            // Los valores se calibraron como offset local de la mano en Unity.
-            // Recalcular una rotación mundial aquí alteraba la orientación al jugar,
-            // aunque el Inspector mostrara la rotación local elegida.
             pistolProp.AttachTo(rightHand, pistolHandPosition, pistolHandRotation);
             pistolPoseActive = true;
         }
+        armaSacada = true;
+        guardarArmaEn = Time.time + segundosParaGuardarArma;
         SetBool(PistolEquippedParameter, true);
     }
 
@@ -231,7 +211,11 @@ public class Movement : MonoBehaviour
         SetBool(AimingParameter, false);
         SetBool(PistolEquippedParameter, false);
         pistolPoseActive = false;
+        armaSacada = false;
         pistolProp?.Restore();
+
+        // Si la linterna estaba encendida antes de sacar la pistola, vuelve a encenderse.
+        lantern?.ReanudarTrasArma();
     }
 
     public void SetApuntando(bool apuntando)

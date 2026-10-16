@@ -15,6 +15,7 @@ public class Lantern : MonoBehaviour
     [SerializeField, Range(10f, 80f)] private float anguloHaz = 40f;
     [SerializeField, Range(5f, 70f)] private float anguloInteriorHaz = 16f;
     [SerializeField, Range(0f, 25f)] private float inclinacionHaciaAbajo = 4f;
+    [SerializeField]private bool reanudarTrasArma;
 
     [Header("Origen del haz")]
     [Tooltip("Objeto vacío colocado justo delante del lente de la linterna. La luz sale desde ahí. Si se deja vacío, la luz se queda donde esté su objeto.")]
@@ -268,10 +269,6 @@ public class Lantern : MonoBehaviour
 
         OnLinternaEstadoCambiado?.Invoke(false);
     }
-
-    /// <summary>
-    /// Llamado por el botón UI o interacción para alternar la linterna.
-    /// </summary>
     public void CambiarLinterna()
     {
         // Si no hay batería, no se puede encender
@@ -298,9 +295,30 @@ public class Lantern : MonoBehaviour
         OnLinternaEstadoCambiado?.Invoke(linternaEncendida);
     }
 
-    /// <summary>
-    /// Recarga la batería (por ejemplo, al recoger pilas o baterías en el juego).
-    /// </summary>
+    /// <summary>Apaga la linterna al sacar la pistola y recuerda si estaba encendida.</summary>
+    public void ApagarPorArma()
+    {
+        if (!linternaEncendida) return;
+        reanudarTrasArma = true;
+        linternaEncendida = false;
+        EstablecerLuzActiva(false);
+        playerMovement?.SetLinternaEnMano(false);
+        OnLinternaEstadoCambiado?.Invoke(false);
+    }
+
+    /// <summary>Vuelve a encender la linterna al guardar la pistola, si estaba encendida antes.</summary>
+    public void ReanudarTrasArma()
+    {
+        if (!reanudarTrasArma) return;
+        reanudarTrasArma = false;
+        if (bateria <= 0f) return;
+
+        linternaEncendida = true;
+        EstablecerLuzActiva(true);
+        ActualizarIntensidadYLuz();
+        playerMovement?.SetLinternaEnMano(true);
+        OnLinternaEstadoCambiado?.Invoke(true);
+    }
     public void RecargarBateria(float cantidad)
     {
         bateria = Mathf.Clamp(bateria + cantidad, 0f, batMax);

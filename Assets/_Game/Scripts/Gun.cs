@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+
+/// <summary>Mobile pistol controls, magazine, reserve reload, and forward hitscan damage.</summary>
 public class Gun : MonoBehaviour
 {
     [Header("Munición")]
