@@ -1,24 +1,23 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-/// <summary>
-/// Shows the pistol magazine as a row of bullet icons (left to right),
-/// one icon per bullet. Reserve ammunition can optionally stay as text.
-/// </summary>
 public class AmmoCounterUI : MonoBehaviour
 {
     [SerializeField] private Gun gun;
 
-    [Header("Balas del cargador")]
+    [Header("Balas del arma")]
     [SerializeField] private Sprite bulletSprite;
     [Tooltip("Contenedor donde se crean las balas. Si se deja vacío usa este mismo objeto.")]
     [SerializeField] private RectTransform bulletContainer;
     [SerializeField] private Vector2 bulletSize = new Vector2(24f, 48f);
     [SerializeField] private float spacing = 4f;
 
-    [Header("Reserva (opcional)")]
+    [Header("Texto del cargador (opcional)")]
+    [Tooltip("Muestra la munición de reserva, la que usa el botón de recargar. No lo pongas dentro del contenedor de balas: el layout lo metería en la fila.")]
+    [FormerlySerializedAs("magazineText")]
     [SerializeField] private TMP_Text reserveText;
 
     private readonly List<Image> bullets = new List<Image>();
@@ -92,6 +91,11 @@ public class AmmoCounterUI : MonoBehaviour
         }
 
         if (reserveText != null)
-            reserveText.text = $"RESERVA    {reserve}";
+        {
+            // La reserva se cuenta en balas; aquí se muestra en cargadores.
+            // Ceil: un cargador a medias todavía se puede recargar, así que cuenta.
+            int magazinesLeft = Mathf.CeilToInt(reserve / (float)gun.MagazineCapacity);
+            reserveText.text = $"Cargador: {magazinesLeft}";
+        }
     }
 }
