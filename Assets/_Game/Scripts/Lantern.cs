@@ -9,17 +9,41 @@ public class Lantern : MonoBehaviour
     [SerializeField] private bool linternaEncendida = false;
     [Tooltip("Dejar en -1 para usar automáticamente la intensidad configurada en el componente Light")]
     [SerializeField] private float intensidadMaxima = -1f;
+
     [Header("Haz de la linterna")]
-    [SerializeField, Min(1f)] private float alcanceHaz = 10f;
-    [SerializeField, Range(10f, 80f)] private float anguloHaz = 24f;
-    [SerializeField, Range(5f, 70f)] private float anguloInteriorHaz = 11f;
-    [SerializeField, Range(0f, 25f)] private float inclinacionHaciaAbajo = 6f;
+    [SerializeField, Min(1f)] private float alcanceHaz = 18f;
+    [SerializeField, Range(10f, 80f)] private float anguloHaz = 40f;
+    [SerializeField, Range(5f, 70f)] private float anguloInteriorHaz = 16f;
+    [SerializeField, Range(0f, 25f)] private float inclinacionHaciaAbajo = 4f;
+    [SerializeField] private bool reanudarTrasArma;
+
+    [Header("Origen del haz")]
+    [Tooltip("Objeto vacío colocado justo delante del lente de la linterna. La luz sale desde ahí. Si se deja vacío, la luz se queda donde esté su objeto.")]
+    [SerializeField] private Transform puntoEmision;
+    [Tooltip("Activado: el haz apunta hacia donde mira el eje azul (Z) del punto de emisión. Desactivado: apunta hacia delante del personaje.")]
+    [SerializeField] private bool seguirOrientacionDelPunto = false;
+
+    [Header("Resplandor alrededor del haz")]
+    [Tooltip("Agrega una segunda luz ancha y tenue que ilumina los alrededores del haz, como el halo de una linterna real.")]
+    [SerializeField] private bool usarLuzDerrame = true;
+    [Tooltip("Opcional. Si se deja vacío, se crea automáticamente.")]
+    [SerializeField] private Light luzDerrame;
+    [SerializeField, Range(40f, 120f)] private float anguloDerrame = 80f;
+    [Tooltip("Intensidad del resplandor como fracción de la intensidad del haz principal")]
+    [SerializeField, Range(0f, 0.6f)] private float proporcionDerrame = 0.2f;
 
     [Header("Batería")]
     [SerializeField] private float batMax = 100f;
     [SerializeField] private float bateria = 100f;
     [SerializeField] private float tasaDescargaPorSegundo = 1.5f;
     [SerializeField] private bool atenuarConBateria = true;
+
+    [Header("Baterías de repuesto")]
+    [Tooltip("Inventario de pilas del jugador. Si se deja vacío, se busca solo.")]
+    [SerializeField] private BatteryInventory inventarioBaterias;
+    [Tooltip("Segundos de espera antes de cambiar la batería agotada por una de repuesto.")]
+    [SerializeField, Min(0f)] private float segundosCambioBateria = 3f;
+    [SerializeField] private AudioClip sonidoCambioBateria;
 
     [Header("Efectos de Terror / Baja Batería")]
     [SerializeField] private float umbralBateriaBaja = 25f;
@@ -41,11 +65,16 @@ public class Lantern : MonoBehaviour
     private bool estaParpadeando = false;
     private float intensidadOriginal;
     private Movement playerMovement;
+    private bool cambiandoBateria;
+    private float cambioBateriaEn;
+    private bool encenderTrasCambio;
 
     // Propiedad pública de solo lectura para acceder a la batería actual
     public float BateriaActual => bateria;
     public float BateriaPorcentaje => Mathf.Clamp01(bateria / batMax);
     public bool EstaEncendida => linternaEncendida;
+    /// <summary>True mientras corre la espera para cambiar la batería agotada.</summary>
+    public bool CambiandoBateria => cambiandoBateria;
 
     void Awake()
     {
@@ -54,9 +83,12 @@ public class Lantern : MonoBehaviour
 
         playerMovement = GetComponentInParent<Movement>();
 
+        if (inventarioBaterias == null) inventarioBaterias = GetComponentInParent<BatteryInventory>();
+        if (inventarioBaterias == null) inventarioBaterias = FindFirstObjectByType<BatteryInventory>();
+
         if (linterna != null)
         {
-            // Usar la intensidad configurada en el componente Light (en URP suele ser 1000+ lúmenes)
+            // Usar la intensidad configurada en el componente Light
             intensidadOriginal = (intensidadMaxima > 0) ? intensidadMaxima : linterna.intensity;
             if (intensidadMaxima <= 0) intensidadMaxima = linterna.intensity;
             linterna.type = LightType.Spot;
@@ -64,7 +96,9 @@ public class Lantern : MonoBehaviour
             linterna.spotAngle = anguloHaz;
             linterna.innerSpotAngle = Mathf.Min(anguloInteriorHaz, anguloHaz);
             linterna.color = new Color(1f, 0.97f, 0.91f);
-            linterna.enabled = linternaEncendida;
+
+            ConfigurarLuzDerrame();
+            EstablecerLuzActiva(linternaEncendida);
         }
 
         if (audioSource == null)
@@ -98,6 +132,12 @@ public class Lantern : MonoBehaviour
                 Debug.Log("<color=yellow>[Lantern]</color> Modo prueba: Batería forzada a 15% para probar parpadeo.");
                 ActualizarIntensidadYLuz();
             }
+
+            if (UnityEngine.InputSystem.Keyboard.current.nKey.wasPressedThisFrame)
+            {
+                bateria = 1f;
+                Debug.Log("<color=yellow>[Lantern]</color> Modo prueba: Batería casi agotada para probar el cambio de pila.");
+            }
 #endif
         }
 #endif
@@ -106,18 +146,68 @@ public class Lantern : MonoBehaviour
         {
             ConsumirBateria();
         }
+
+        ActualizarCambioBateria();
     }
 
     private void LateUpdate()
     {
         if (!linternaEncendida || linterna == null) return;
 
-        // El modelo importado traía el Spot Light rotado de lado. Hacemos que el
-        // cono salga hacia delante del personaje y caiga un poco sobre el suelo.
-        Vector3 forward = playerMovement != null ? playerMovement.transform.forward : transform.forward;
-        Vector3 beamDirection = (forward - Vector3.up * Mathf.Tan(inclinacionHaciaAbajo * Mathf.Deg2Rad)).normalized;
+        // 1) Posición: la luz sale del lente de la linterna, no del centro del modelo.
+        if (puntoEmision != null)
+            linterna.transform.position = puntoEmision.position;
+
+        // 2) Dirección: hacia donde apunta el punto de emisión, o hacia delante del personaje
+        //    inclinada un poco hacia el suelo.
+        Vector3 beamDirection;
+        if (seguirOrientacionDelPunto && puntoEmision != null)
+        {
+            beamDirection = puntoEmision.forward;
+        }
+        else
+        {
+            Vector3 forward = playerMovement != null ? playerMovement.transform.forward : transform.forward;
+            beamDirection = (forward - Vector3.up * Mathf.Tan(inclinacionHaciaAbajo * Mathf.Deg2Rad)).normalized;
+        }
+
         if (beamDirection.sqrMagnitude > 0.001f)
             linterna.transform.rotation = Quaternion.LookRotation(beamDirection, Vector3.up);
+
+        // 3) El resplandor siempre acompaña al haz principal.
+        if (luzDerrame != null)
+            luzDerrame.transform.SetPositionAndRotation(linterna.transform.position, linterna.transform.rotation);
+    }
+
+    private void ConfigurarLuzDerrame()
+    {
+        if (!usarLuzDerrame) return;
+
+        if (luzDerrame == null)
+        {
+            GameObject derrame = new GameObject("LuzDerrame");
+            derrame.transform.SetParent(linterna.transform, false);
+            luzDerrame = derrame.AddComponent<Light>();
+        }
+
+        luzDerrame.type = LightType.Spot;
+        luzDerrame.range = alcanceHaz * 0.7f;
+        luzDerrame.spotAngle = anguloDerrame;
+        luzDerrame.innerSpotAngle = anguloDerrame * 0.3f;
+        luzDerrame.color = linterna.color;
+        luzDerrame.shadows = LightShadows.None;
+    }
+
+    private void EstablecerLuzActiva(bool activa)
+    {
+        if (linterna != null) linterna.enabled = activa;
+        if (luzDerrame != null) luzDerrame.enabled = activa;
+    }
+
+    private void AplicarIntensidad(float factor)
+    {
+        if (linterna != null) linterna.intensity = intensidadOriginal * factor;
+        if (luzDerrame != null) luzDerrame.intensity = intensidadOriginal * proporcionDerrame * factor;
     }
 
     private void ConsumirBateria()
@@ -156,17 +246,15 @@ public class Lantern : MonoBehaviour
     {
         if (linterna == null || estaParpadeando) return;
 
+        float factor = 1f;
         if (atenuarConBateria && batMax > 0f)
         {
             // Mantiene la intensidad nominal hasta la mitad de batería y luego cae gradualmente.
             float cargaEnZonaDeAtenuacion = Mathf.InverseLerp(0f, 0.5f, BateriaPorcentaje);
-            float factor = Mathf.Lerp(0.35f, 1f, cargaEnZonaDeAtenuacion);
-            linterna.intensity = intensidadOriginal * factor;
+            factor = Mathf.Lerp(0.35f, 1f, cargaEnZonaDeAtenuacion);
         }
-        else
-        {
-            linterna.intensity = intensidadOriginal;
-        }
+
+        AplicarIntensidad(factor);
     }
 
     private IEnumerator EfectoParpadeo()
@@ -176,13 +264,13 @@ public class Lantern : MonoBehaviour
 
         for (int i = 0; i < parpadeos; i++)
         {
-            if (linterna != null) linterna.enabled = false;
+            EstablecerLuzActiva(false);
             yield return new WaitForSeconds(Random.Range(0.04f, 0.12f));
 
             if (linterna != null && linternaEncendida)
             {
-                linterna.enabled = true;
-                linterna.intensity = intensidadOriginal * Random.Range(0.2f, 0.7f);
+                EstablecerLuzActiva(true);
+                AplicarIntensidad(Random.Range(0.2f, 0.7f));
             }
             yield return new WaitForSeconds(Random.Range(0.05f, 0.15f));
         }
@@ -193,8 +281,11 @@ public class Lantern : MonoBehaviour
 
     private void ApagarPorBateria()
     {
+        // Estaba encendida al agotarse: cuando entre una pila nueva, vuelve a encenderse sola.
+        encenderTrasCambio = true;
+
         linternaEncendida = false;
-        if (linterna != null) linterna.enabled = false;
+        EstablecerLuzActiva(false);
         playerMovement?.SetLinternaEnMano(false);
 
         if (audioSource != null && sonidoApagadoBateria != null)
@@ -206,10 +297,72 @@ public class Lantern : MonoBehaviour
     }
 
     /// <summary>
-    /// Llamado por el botón UI o interacción para alternar la linterna.
+    /// Con la batería agotada, espera unos segundos y la cambia sola por una de repuesto.
+    /// Sin repuestos, la linterna queda apagada hasta recoger una pila del entorno.
     /// </summary>
+    private void ActualizarCambioBateria()
+    {
+        if (inventarioBaterias == null) return;
+
+        if (!cambiandoBateria)
+        {
+            if (bateria <= 0f && inventarioBaterias.Count > 0)
+            {
+                cambiandoBateria = true;
+                cambioBateriaEn = Time.time + segundosCambioBateria;
+            }
+            return;
+        }
+
+        if (Time.time < cambioBateriaEn) return;
+
+        cambiandoBateria = false;
+        if (!inventarioBaterias.TryUse()) return;
+
+        bateria = batMax;
+        OnBateriaCambiada?.Invoke(BateriaPorcentaje);
+        ActualizarIntensidadYLuz();
+
+        if (audioSource != null && sonidoCambioBateria != null)
+            audioSource.PlayOneShot(sonidoCambioBateria);
+
+        if (!encenderTrasCambio) return;
+        encenderTrasCambio = false;
+
+        // Si las manos están ocupadas (pistola, radio o bolillo), la linterna vuelve al guardarlos.
+        if (ManosOcupadas())
+        {
+            reanudarTrasArma = true;
+            return;
+        }
+
+        EncenderLinterna();
+    }
+
+    private bool ManosOcupadas()
+    {
+        return playerMovement != null &&
+               (playerMovement.PistolaSacada || playerMovement.RadioEnUso || playerMovement.BolilloEnUso);
+    }
+
+    private void EncenderLinterna()
+    {
+        linternaEncendida = true;
+        EstablecerLuzActiva(true);
+        playerMovement?.SetLinternaEnMano(true);
+        OnLinternaEstadoCambiado?.Invoke(true);
+    }
+
     public void CambiarLinterna()
     {
+        if (playerMovement != null && (playerMovement.RadioEnUso || playerMovement.BolilloEnUso)) return;
+        if (playerMovement != null && playerMovement.PistolaSacada)
+        {
+            reanudarTrasArma = true;
+            playerMovement.GuardarPistola();
+            ReproducirClick();
+            return;
+        }
         // Si no hay batería, no se puede encender
         if (!linternaEncendida && bateria <= 0f)
         {
@@ -223,7 +376,7 @@ public class Lantern : MonoBehaviour
 
         if (linterna != null)
         {
-            linterna.enabled = linternaEncendida;
+            EstablecerLuzActiva(linternaEncendida);
             if (linternaEncendida)
             {
                 ActualizarIntensidadYLuz();
@@ -234,9 +387,30 @@ public class Lantern : MonoBehaviour
         OnLinternaEstadoCambiado?.Invoke(linternaEncendida);
     }
 
-    /// <summary>
-    /// Recarga la batería (por ejemplo, al recoger pilas o baterías en el juego).
-    /// </summary>
+    /// <summary>Apaga la linterna al sacar la pistola y recuerda si estaba encendida.</summary>
+    public void ApagarPorArma()
+    {
+        if (!linternaEncendida) return;
+        reanudarTrasArma = true;
+        linternaEncendida = false;
+        EstablecerLuzActiva(false);
+        playerMovement?.SetLinternaEnMano(false);
+        OnLinternaEstadoCambiado?.Invoke(false);
+    }
+
+    /// <summary>Vuelve a encender la linterna al guardar la pistola, si estaba encendida antes.</summary>
+    public void ReanudarTrasArma()
+    {
+        if (!reanudarTrasArma) return;
+        reanudarTrasArma = false;
+        if (bateria <= 0f) return;
+
+        linternaEncendida = true;
+        EstablecerLuzActiva(true);
+        ActualizarIntensidadYLuz();
+        playerMovement?.SetLinternaEnMano(true);
+        OnLinternaEstadoCambiado?.Invoke(true);
+    }
     public void RecargarBateria(float cantidad)
     {
         bateria = Mathf.Clamp(bateria + cantidad, 0f, batMax);

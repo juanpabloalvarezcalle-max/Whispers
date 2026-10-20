@@ -138,6 +138,7 @@ public class Gun : MonoBehaviour
             GameObject effectObject = new GameObject("Impacto del disparo");
             effectObject.hideFlags = HideFlags.DontSave;
             impactEffect = effectObject.AddComponent<ParticleSystem>();
+            impactEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             ParticleSystem.MainModule main = impactEffect.main;
             main.duration = 0.18f;

@@ -5,7 +5,7 @@ public class Movement : MonoBehaviour
 {
     [SerializeField] private Joystick joystick;
     [SerializeField] private float speed = 5f;
-    [SerializeField] private float rotationSpeed = 540f; 
+    [SerializeField] private float rotationSpeed = 540f;
     [SerializeField, Range(0f, 0.5f)] private float movementDeadZone = 0.15f;
     [SerializeField] private Animator animator;
 
@@ -29,7 +29,7 @@ public class Movement : MonoBehaviour
 
     private Rigidbody rb;
     private Vector3 move;
-    private Transform cam; 
+    private Transform cam;
     private Transform rightHand;
     private Transform leftHand;
     private Gun testGun;
@@ -37,26 +37,61 @@ public class Movement : MonoBehaviour
     private PropAttachment flashlightProp;
     private PropAttachment radioProp;
     private PropAttachment batonProp;
-    private bool returnBatonAfterAnimation;
-    private bool batonAnimationStarted;
     private bool pistolPoseActive;
+    private bool flashlightPoseActive;
+    [SerializeField, Min(0f)] private float segundosParaGuardarArma = 3f;
+    private Lantern lantern;
+    private bool armaSacada;
+    private float guardarArmaEn;
+    public bool PistolaSacada => armaSacada || (animator != null && animator.GetBool(AimingParameter));
+
+    [Header("Radio")]
+    [Tooltip("Nombre exacto del estado de la radio en el Animator.")]
+    [SerializeField] private string radioStateName = "BrazosRadio";
+    [Tooltip("Nombre exacto de la capa de brazos en el Animator.")]
+    [SerializeField] private string armsLayerName = "Brazos";
+    [Tooltip("Punto del clip (0 = inicio, 1 = final) en que la mano agarra la radio.")]
+    [SerializeField, Range(0f, 1f)] private float radioTomadaEn = 0.25f;
+    [Tooltip("Punto del clip (0 = inicio, 1 = final) en que la radio vuelve a la cintura.")]
+    [SerializeField, Range(0f, 1f)] private float radioGuardadaEn = 0.8f;
+
+    private static readonly int RadioTriggerParameter = Animator.StringToHash("Radio");
+    private int radioStateHash;
+    private int armsLayer = -1;
+    private bool radioEnUso;
+    private bool radioEntroAlEstado;
+    private bool radioPoseActive;
+    private float radioInicio;
+
+    public bool RadioEnUso => radioEnUso;
+
+    [Header("Bolillo")]
+    [Tooltip("Nombre exacto del estado del golpe en el Animator.")]
+    [SerializeField] private string batonStateName = "BrazosGolpe";
+    [Tooltip("Punto del clip (0 = inicio, 1 = final) en que la mano agarra el bolillo.")]
+    [SerializeField, Range(0f, 1f)] private float bolilloTomadoEn = 0.2f;
+    [Tooltip("Punto del clip (0 = inicio, 1 = final) en que el bolillo vuelve a su lugar.")]
+    [SerializeField, Range(0f, 1f)] private float bolilloGuardadoEn = 1f;
+
+    private int batonStateHash;
+    private bool bolilloEnUso;
+    private bool bolilloEntroAlEstado;
+    private bool bolilloPoseActive;
+    private float bolilloInicio;
+
+    public bool BolilloEnUso => bolilloEnUso;
 
     void Awake()
     {
         Application.targetFrameRate = 60;
+        batonStateHash = Animator.StringToHash(batonStateName);
         rb = GetComponent<Rigidbody>();
         rb.interpolation = RigidbodyInterpolation.Interpolate;
-        cam = Camera.main.transform; 
-
-        // El Animator está en el modelo, que es hijo del objeto Player.
-        // Si no se asignó desde el Inspector, lo buscamos en los hijos.
+        cam = Camera.main.transform;
         if (animator == null)
         {
             animator = GetComponentInChildren<Animator>();
         }
-
-        // El FBX puede tener los meshes de los objetos como hermanos del Animator.
-        // Buscamos bajo Player para encontrarlos, pero nunca fuera del personaje.
         Transform characterRoot = transform;
         rightHand = FindBone(characterRoot, "RightHand");
         leftHand = FindBone(characterRoot, "LeftHand");
@@ -65,6 +100,10 @@ public class Movement : MonoBehaviour
         radioProp = CacheProp(characterRoot, "Radio");
         batonProp = CacheProp(characterRoot, "Bolillo");
         testGun = GetComponentInChildren<Gun>();
+        lantern = GetComponentInChildren<Lantern>(true);
+        if (lantern == null) lantern = FindFirstObjectByType<Lantern>();
+        radioStateHash = Animator.StringToHash(radioStateName);
+        if (animator != null) armsLayer = animator.GetLayerIndex(armsLayerName);
 
         if (animator != null)
         {
@@ -74,12 +113,12 @@ public class Movement : MonoBehaviour
 
     void Update()
     {
-        Vector3 forward = cam.forward; 
-        Vector3 right = cam.right; 
-        forward.y = 0f; 
+        Vector3 forward = cam.forward;
+        Vector3 right = cam.right;
+        forward.y = 0f;
         right.y = 0f;
-        forward.Normalize(); 
-        right.Normalize(); 
+        forward.Normalize();
+        right.Normalize();
         float verticalInput = joystick != null ? joystick.Vertical : 0f;
         float horizontalInput = joystick != null ? joystick.Horizontal : 0f;
 #if UNITY_EDITOR
@@ -111,6 +150,9 @@ public class Movement : MonoBehaviour
         }
 
         UpdateBatonAttachment();
+        if (armaSacada && segundosParaGuardarArma > 0f && Time.time >= guardarArmaEn)
+            GuardarPistola();
+            UpdateRadioAttachment();
 
 #if UNITY_EDITOR
         // Teclas de diagnóstico para probar la pose sin usar la interfaz táctil.
@@ -140,13 +182,29 @@ public class Movement : MonoBehaviour
 
     void LateUpdate()
     {
-        // Conservamos los offsets locales de posición y rotación relativos a la mano.
-        if (!pistolPoseActive || rightHand == null) return;
+        if (rightHand == null) return;
 
-        // Mantiene el offset sincronizado con el Inspector durante Play Mode,
-        // así se puede ajustar la posición sin guardar y volver a equipar.
-        pistolProp?.SetLocalPosition(pistolHandPosition);
-        pistolProp?.SetLocalRotation(Quaternion.Euler(pistolHandRotation));
+        if (pistolPoseActive)
+        {
+            pistolProp?.SetLocalPosition(pistolHandPosition);
+            pistolProp?.SetLocalRotation(Quaternion.Euler(pistolHandRotation));
+        }
+
+        if (flashlightPoseActive)
+        {
+            flashlightProp?.SetLocalPosition(flashlightHandPosition);
+            flashlightProp?.SetLocalRotation(Quaternion.Euler(flashlightHandRotation));
+        }
+        if (radioPoseActive && leftHand != null)
+        {
+            radioProp?.SetLocalPosition(radioHandPosition);
+            radioProp?.SetLocalRotation(Quaternion.Euler(radioHandRotation));
+        }
+        if (bolilloPoseActive)
+        {
+            batonProp?.SetLocalPosition(batonHandPosition);
+            batonProp?.SetLocalRotation(Quaternion.Euler(batonHandRotation));
+        }
     }
 
     void FixedUpdate()
@@ -172,14 +230,17 @@ public class Movement : MonoBehaviour
     // Estos métodos son los "enchufes" que llaman los botones y las mecánicas.
     public void EquiparPistola()
     {
+        if (radioEnUso) TerminarRadio(false);
+        if (bolilloEnUso) TerminarBolillo(false);
+        if (lantern != null) lantern.ApagarPorArma();
+
         if (pistolProp != null && rightHand != null)
         {
-            // Los valores se calibraron como offset local de la mano en Unity.
-            // Recalcular una rotación mundial aquí alteraba la orientación al jugar,
-            // aunque el Inspector mostrara la rotación local elegida.
             pistolProp.AttachTo(rightHand, pistolHandPosition, pistolHandRotation);
             pistolPoseActive = true;
         }
+        armaSacada = true;
+        guardarArmaEn = Time.time + segundosParaGuardarArma;
         SetBool(PistolEquippedParameter, true);
     }
 
@@ -188,7 +249,11 @@ public class Movement : MonoBehaviour
         SetBool(AimingParameter, false);
         SetBool(PistolEquippedParameter, false);
         pistolPoseActive = false;
+        armaSacada = false;
         pistolProp?.Restore();
+
+        // Si la linterna estaba encendida antes de sacar la pistola, vuelve a encenderse.
+        lantern?.ReanudarTrasArma();
     }
 
     public void SetApuntando(bool apuntando)
@@ -203,49 +268,162 @@ public class Movement : MonoBehaviour
         SetApuntando(!apuntando);
     }
 
-    public void SetRadioActivada(bool activada)
+    public void UsarRadio()
     {
-        SetBool(RadioActiveParameter, activada);
-        if (activada) radioProp?.AttachTo(leftHand, radioHandPosition, radioHandRotation);
-        else radioProp?.Restore();
+        if (radioEnUso || bolilloEnUso || animator == null) return;
+
+        // La radio ocupa los brazos: se guarda la pistola y se apaga la linterna mientras dura.
+        if (PistolaSacada) GuardarPistola();
+        lantern?.ApagarPorArma();
+
+        radioEnUso = true;
+        radioEntroAlEstado = false;
+        radioInicio = Time.time;
+        animator.SetTrigger(RadioTriggerParameter);
+
+        // Aquí se conectará el sistema de pistas y diálogo del fantasma cuando exista.
     }
 
-    public void AlternarRadio()
+    public void AlternarRadio() => UsarRadio();
+
+    public void SetRadioActivada(bool activada)
     {
-        bool activada = animator != null && animator.GetBool(RadioActiveParameter);
-        SetRadioActivada(!activada);
+        if (activada) UsarRadio();
+    }
+
+    private void TerminarRadio(bool reanudarLinterna)
+    {
+        radioEnUso = false;
+        radioEntroAlEstado = false;
+        animator?.ResetTrigger(RadioTriggerParameter);
+
+        if (radioPoseActive)
+        {
+            radioPoseActive = false;
+            radioProp?.Restore();
+        }
+
+        if (reanudarLinterna) lantern?.ReanudarTrasArma();
     }
 
     public void SetLinternaEnMano(bool enMano)
     {
         SetBool(FlashlightInHandParameter, enMano);
-        if (enMano) flashlightProp?.AttachTo(leftHand, flashlightHandPosition, flashlightHandRotation);
-        else flashlightProp?.Restore();
+        if (enMano)
+        {
+            // La animación de la linterna la sostiene con la mano derecha.
+            flashlightProp?.AttachTo(rightHand, flashlightHandPosition, flashlightHandRotation);
+            flashlightPoseActive = flashlightProp != null && rightHand != null;
+        }
+        else
+        {
+            flashlightPoseActive = false;
+            flashlightProp?.Restore();
+        }
     }
 
     public void GolpearConBolillo()
     {
-        if (animator == null) return;
-        batonProp?.AttachTo(rightHand, batonHandPosition, batonHandRotation);
-        returnBatonAfterAnimation = true;
-        batonAnimationStarted = false;
+        if (animator == null || bolilloEnUso) return;
+
+        // El bolillo va en la mano derecha: se corta la radio, se guarda la pistola
+        // y se apaga la linterna mientras dura el golpe.
+        if (radioEnUso) TerminarRadio(false);
+        if (PistolaSacada) GuardarPistola();
+        lantern?.ApagarPorArma();
+
+        bolilloEnUso = true;
+        bolilloEntroAlEstado = false;
+        bolilloInicio = Time.time;
         animator.SetTrigger(PunchParameter);
+
+        // Aquí se conectará el daño cuerpo a cuerpo cuando exista.
     }
 
     private void UpdateBatonAttachment()
     {
-        if (!returnBatonAfterAnimation || animator == null) return;
+        if (!bolilloEnUso || animator == null || armsLayer < 0) return;
 
-        bool playingPunch = animator.GetCurrentAnimatorStateInfo(0).IsName("GolpeBolillo");
-        if (playingPunch)
+        AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(armsLayer);
+
+        if (state.shortNameHash == batonStateHash)
         {
-            batonAnimationStarted = true;
+            bolilloEntroAlEstado = true;
+            float progreso = state.normalizedTime;
+
+            if (!bolilloPoseActive && progreso >= bolilloTomadoEn && progreso < bolilloGuardadoEn)
+            {
+                batonProp?.AttachTo(leftHand, batonHandPosition, batonHandRotation);
+                bolilloPoseActive = batonProp != null && leftHand != null; ;
+            }
+            else if (bolilloPoseActive && progreso >= bolilloGuardadoEn)
+            {
+                bolilloPoseActive = false;
+                batonProp?.Restore();
+            }
         }
-        else if (batonAnimationStarted)
+        else if (bolilloEntroAlEstado)
         {
+            // El golpe terminó y el Animator ya salió del estado.
+            TerminarBolillo(true);
+        }
+        else if (Time.time - bolilloInicio > 1f)
+        {
+            Debug.LogWarning($"Movement: el Animator no entró al estado '{batonStateName}' de la capa '{armsLayerName}'. Revisa el nombre y la transición Any State.", this);
+            TerminarBolillo(true);
+        }
+    }
+
+    private void TerminarBolillo(bool reanudarLinterna)
+    {
+        bolilloEnUso = false;
+        bolilloEntroAlEstado = false;
+        if (animator != null) animator.ResetTrigger(PunchParameter);
+
+        if (bolilloPoseActive)
+        {
+            bolilloPoseActive = false;
             batonProp?.Restore();
-            returnBatonAfterAnimation = false;
-            batonAnimationStarted = false;
+        }
+
+        if (reanudarLinterna) lantern?.ReanudarTrasArma();
+    }
+    private void UpdateRadioAttachment()
+    {
+        if (!radioEnUso || animator == null || armsLayer < 0) return;
+
+        AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(armsLayer);
+
+        if (state.shortNameHash == radioStateHash)
+        {
+            radioEntroAlEstado = true;
+            float progreso = state.normalizedTime;
+
+            if (!radioPoseActive && progreso >= radioTomadaEn && progreso < radioGuardadaEn)
+            {
+                radioProp?.AttachTo(leftHand, radioHandPosition, radioHandRotation);
+                radioPoseActive = radioProp != null && leftHand != null;
+            }
+            else if (radioPoseActive && progreso >= radioGuardadaEn)
+            {
+                radioPoseActive = false;
+                radioProp?.Restore();
+            }
+        }
+        else if (radioEntroAlEstado)
+        {
+            // El clip terminó y el Animator ya salió del estado de la radio.
+            TerminarRadio(true);
+        }
+        else if (Time.time - radioInicio > 1f)
+        {
+            AnimatorClipInfo[] clips = animator.GetCurrentAnimatorClipInfo(armsLayer);
+            string clipActual = clips.Length > 0 ? clips[0].clip.name : "ninguno (estado vacío)";
+            Debug.LogWarning(
+                $"Movement: el Animator no entró a '{radioStateName}' (capa '{armsLayerName}', índice {armsLayer}). " +
+                $"Trigger Radio sin consumir: {animator.GetBool(RadioTriggerParameter)}. " +
+                $"Clip actual: {clipActual}.", this);
+            TerminarRadio(true);
         }
     }
 
