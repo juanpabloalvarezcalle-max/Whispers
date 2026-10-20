@@ -15,7 +15,7 @@ public class Lantern : MonoBehaviour
     [SerializeField, Range(10f, 80f)] private float anguloHaz = 40f;
     [SerializeField, Range(5f, 70f)] private float anguloInteriorHaz = 16f;
     [SerializeField, Range(0f, 25f)] private float inclinacionHaciaAbajo = 4f;
-    [SerializeField]private bool reanudarTrasArma;
+    [SerializeField] private bool reanudarTrasArma;
 
     [Header("Origen del haz")]
     [Tooltip("Objeto vacío colocado justo delante del lente de la linterna. La luz sale desde ahí. Si se deja vacío, la luz se queda donde esté su objeto.")]
@@ -38,6 +38,13 @@ public class Lantern : MonoBehaviour
     [SerializeField] private float tasaDescargaPorSegundo = 1.5f;
     [SerializeField] private bool atenuarConBateria = true;
 
+    [Header("Baterías de repuesto")]
+    [Tooltip("Inventario de pilas del jugador. Si se deja vacío, se busca solo.")]
+    [SerializeField] private BatteryInventory inventarioBaterias;
+    [Tooltip("Segundos de espera antes de cambiar la batería agotada por una de repuesto.")]
+    [SerializeField, Min(0f)] private float segundosCambioBateria = 3f;
+    [SerializeField] private AudioClip sonidoCambioBateria;
+
     [Header("Efectos de Terror / Baja Batería")]
     [SerializeField] private float umbralBateriaBaja = 25f;
     [SerializeField] private bool parpadeoEnBajaBateria = true;
@@ -58,11 +65,16 @@ public class Lantern : MonoBehaviour
     private bool estaParpadeando = false;
     private float intensidadOriginal;
     private Movement playerMovement;
+    private bool cambiandoBateria;
+    private float cambioBateriaEn;
+    private bool encenderTrasCambio;
 
     // Propiedad pública de solo lectura para acceder a la batería actual
     public float BateriaActual => bateria;
     public float BateriaPorcentaje => Mathf.Clamp01(bateria / batMax);
     public bool EstaEncendida => linternaEncendida;
+    /// <summary>True mientras corre la espera para cambiar la batería agotada.</summary>
+    public bool CambiandoBateria => cambiandoBateria;
 
     void Awake()
     {
@@ -70,6 +82,9 @@ public class Lantern : MonoBehaviour
             linterna = GetComponentInChildren<Light>();
 
         playerMovement = GetComponentInParent<Movement>();
+
+        if (inventarioBaterias == null) inventarioBaterias = GetComponentInParent<BatteryInventory>();
+        if (inventarioBaterias == null) inventarioBaterias = FindFirstObjectByType<BatteryInventory>();
 
         if (linterna != null)
         {
@@ -117,6 +132,12 @@ public class Lantern : MonoBehaviour
                 Debug.Log("<color=yellow>[Lantern]</color> Modo prueba: Batería forzada a 15% para probar parpadeo.");
                 ActualizarIntensidadYLuz();
             }
+
+            if (UnityEngine.InputSystem.Keyboard.current.nKey.wasPressedThisFrame)
+            {
+                bateria = 1f;
+                Debug.Log("<color=yellow>[Lantern]</color> Modo prueba: Batería casi agotada para probar el cambio de pila.");
+            }
 #endif
         }
 #endif
@@ -125,6 +146,8 @@ public class Lantern : MonoBehaviour
         {
             ConsumirBateria();
         }
+
+        ActualizarCambioBateria();
     }
 
     private void LateUpdate()
@@ -258,6 +281,9 @@ public class Lantern : MonoBehaviour
 
     private void ApagarPorBateria()
     {
+        // Estaba encendida al agotarse: cuando entre una pila nueva, vuelve a encenderse sola.
+        encenderTrasCambio = true;
+
         linternaEncendida = false;
         EstablecerLuzActiva(false);
         playerMovement?.SetLinternaEnMano(false);
@@ -269,6 +295,64 @@ public class Lantern : MonoBehaviour
 
         OnLinternaEstadoCambiado?.Invoke(false);
     }
+
+    /// <summary>
+    /// Con la batería agotada, espera unos segundos y la cambia sola por una de repuesto.
+    /// Sin repuestos, la linterna queda apagada hasta recoger una pila del entorno.
+    /// </summary>
+    private void ActualizarCambioBateria()
+    {
+        if (inventarioBaterias == null) return;
+
+        if (!cambiandoBateria)
+        {
+            if (bateria <= 0f && inventarioBaterias.Count > 0)
+            {
+                cambiandoBateria = true;
+                cambioBateriaEn = Time.time + segundosCambioBateria;
+            }
+            return;
+        }
+
+        if (Time.time < cambioBateriaEn) return;
+
+        cambiandoBateria = false;
+        if (!inventarioBaterias.TryUse()) return;
+
+        bateria = batMax;
+        OnBateriaCambiada?.Invoke(BateriaPorcentaje);
+        ActualizarIntensidadYLuz();
+
+        if (audioSource != null && sonidoCambioBateria != null)
+            audioSource.PlayOneShot(sonidoCambioBateria);
+
+        if (!encenderTrasCambio) return;
+        encenderTrasCambio = false;
+
+        // Si las manos están ocupadas (pistola, radio o bolillo), la linterna vuelve al guardarlos.
+        if (ManosOcupadas())
+        {
+            reanudarTrasArma = true;
+            return;
+        }
+
+        EncenderLinterna();
+    }
+
+    private bool ManosOcupadas()
+    {
+        return playerMovement != null &&
+               (playerMovement.PistolaSacada || playerMovement.RadioEnUso || playerMovement.BolilloEnUso);
+    }
+
+    private void EncenderLinterna()
+    {
+        linternaEncendida = true;
+        EstablecerLuzActiva(true);
+        playerMovement?.SetLinternaEnMano(true);
+        OnLinternaEstadoCambiado?.Invoke(true);
+    }
+
     public void CambiarLinterna()
     {
         if (playerMovement != null && (playerMovement.RadioEnUso || playerMovement.BolilloEnUso)) return;
