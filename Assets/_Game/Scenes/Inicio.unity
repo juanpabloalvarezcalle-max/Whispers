@@ -242,10 +242,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Creditos
+  m_text: "Cr\xE9ditos"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 87c0cefd4124cf045a0d9ed9fad378a2, type: 2}
+  m_sharedMaterial: {fileID: 933142883857851454, guid: 87c0cefd4124cf045a0d9ed9fad378a2, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -381,8 +381,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Cerrar
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 87c0cefd4124cf045a0d9ed9fad378a2, type: 2}
+  m_sharedMaterial: {fileID: 933142883857851454, guid: 87c0cefd4124cf045a0d9ed9fad378a2, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -495,8 +495,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 773.63257, y: -245}
-  m_SizeDelta: {x: 324.0239, y: 125.3697}
+  m_AnchoredPosition: {x: 740.896, y: -249.10873}
+  m_SizeDelta: {x: 443.8211, y: 123.1172}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &291758925
 MonoBehaviour:
@@ -808,8 +808,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 773.63257, y: -411}
-  m_SizeDelta: {x: 324.0239, y: 125.3697}
+  m_AnchoredPosition: {x: 740.896, y: -412.12625}
+  m_SizeDelta: {x: 443.8211, y: 123.1172}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &880579251
 MonoBehaviour:
@@ -964,8 +964,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Jugar
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 87c0cefd4124cf045a0d9ed9fad378a2, type: 2}
+  m_sharedMaterial: {fileID: 933142883857851454, guid: 87c0cefd4124cf045a0d9ed9fad378a2, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1087,7 +1087,7 @@ VideoPlayer:
   m_EnabledAudioTracks: 
   m_DirectAudioMutes: 
   m_ControlledAudioTrackCount: 0
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_SkipOnDrop: 1
   m_Looping: 0
   m_WaitForFirstFrame: 1
@@ -1269,7 +1269,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 635, y: 346}
+  m_AnchoredPosition: {x: 635, y: 368}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1310841742
@@ -1294,8 +1294,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "Programaci\xF3n: \nJuan Pablo Alvar\xE9s\nMaria Angelica Quiroz\n\nConceptualizaci\xF3n, Modelado y animaci\xF3n:\nMaria Angelica Quiroz Baron\nDaniel Mateo Mancera\n\nSonido:\nDaniel Mateo Mancera "
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 87c0cefd4124cf045a0d9ed9fad378a2, type: 2}
+  m_sharedMaterial: {fileID: 933142883857851454, guid: 87c0cefd4124cf045a0d9ed9fad378a2, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1358,7 +1358,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -435.09528, y: 0, z: 0, w: 0}
+  m_margin: {x: -435.09528, y: 0, z: -573.6837, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -1408,8 +1408,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 21, y: -311}
-  m_SizeDelta: {x: 324.0239, y: 125.3697}
+  m_AnchoredPosition: {x: -0.3921, y: -311}
+  m_SizeDelta: {x: 385.881, y: 125.3697}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1517024164
 MonoBehaviour:
@@ -1540,8 +1540,6 @@ MonoBehaviour:
   introDuration: 7
   panelCreditos: {fileID: 836811381}
   duracionAnimacionPanel: 0.3
-  clipMusicaMenu: {fileID: 0}
-  clipSonidoCriatura: {fileID: 0}
   pitchSonidoCriatura: 2.7
   detenerMusicaAlJugar: 1
 --- !u!4 &1627406026
@@ -1699,8 +1697,8 @@ Camera:
   m_GameObject: {fileID: 2034051073}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0

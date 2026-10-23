@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Video;
 
 public class MenuController : MonoBehaviour
 {
@@ -12,22 +13,20 @@ public class MenuController : MonoBehaviour
     [SerializeField] private float duracionAnimacionPanel = 0.3f;
 
     [Header("Audio")]
-    [SerializeField] private AudioClip clipMusicaMenu;
-    [SerializeField] private AudioClip clipSonidoCriatura;
     [SerializeField] private float pitchSonidoCriatura = 2.7f;
     [SerializeField] private bool detenerMusicaAlJugar = true;
-
-    private Vector2 posConfirmacionVisible;
     private Vector2 posCreditosVisible;
-    private Coroutine animacionConfirmacionActual;
     private Coroutine animacionCreditosActual;
-
+    private VideoPlayer vpCon;
     private bool isPlaying = false;
 
     void Start()
     {
         SinNigromante.SetActive(true);
         ConNigromante.SetActive(false);
+
+        vpCon = ConNigromante.GetComponentInChildren<VideoPlayer>(true);
+        if (vpCon != null) vpCon.playOnAwake = false;
 
         if (panelCreditos != null)
         {
@@ -40,21 +39,38 @@ public class MenuController : MonoBehaviour
     {
         if (isPlaying) return;
         isPlaying = true;
-
-        SinNigromante.SetActive(false);
-        ConNigromante.SetActive(true);
-
         StartCoroutine(WaitAndLoadScene());
     }
 
     private IEnumerator WaitAndLoadScene()
     {
+        yield return StartCoroutine(CambiarAVideoNigromante());
+
         yield return new WaitForSeconds(introDuration);
 
         if (TransitionManager.Instance != null)
             TransitionManager.Instance.LoadLevel(sceneToLoad);
         else
             SceneManager.LoadScene(sceneToLoad);
+    }
+
+    private IEnumerator CambiarAVideoNigromante()
+    {
+        // Se activa detrás del video actual, que sigue visible mientras tanto
+        ConNigromante.SetActive(true);
+
+        if (vpCon != null)
+        {
+            vpCon.Prepare();
+            while (!vpCon.isPrepared) yield return null;
+
+            vpCon.Play();
+            while (vpCon.frame < 1) yield return null; // espera al primer frame real
+            yield return null;
+        }
+
+        // Recién ahora se apaga el primero: ya no queda ningún hueco
+        SinNigromante.SetActive(false);
     }
 
     // ---------- Panel de créditos ----------
