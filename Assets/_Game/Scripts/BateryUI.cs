@@ -20,8 +20,8 @@ public class FlashlightBatteryUI : MonoBehaviour
 
     private void Start()
     {
-        if (inventory == null) inventory = FindFirstObjectByType<BatteryInventory>();
-        if (lantern == null) lantern = FindFirstObjectByType<Lantern>();
+        if (inventory == null) inventory = FindAnyObjectByType<BatteryInventory>();
+        if (lantern == null) lantern = FindAnyObjectByType<Lantern>();
 
         if (inventory == null)
             Debug.LogWarning("FlashlightBatteryUI necesita un BatteryInventory (agrégalo al Player).", this);

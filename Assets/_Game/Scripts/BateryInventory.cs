@@ -10,7 +10,7 @@ public class BatteryInventory : MonoBehaviour
 
     public int Count => batteries;
     public bool IsFull => batteries >= MaxBatteries;
-
+    
     private void Awake()
     {
         batteries = Mathf.Clamp(batteries, 0, MaxBatteries);
