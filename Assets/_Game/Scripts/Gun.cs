@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-/// <summary>Mobile pistol controls, magazine, reserve reload, and forward hitscan damage.</summary>
+/// <summary>Mobile pistol controls, magazine, reserve reload, and forward hitscan damage (con autoapuntado opcional).</summary>
 public class Gun : MonoBehaviour
 {
     [Header("Munición")]
@@ -46,6 +46,7 @@ public class Gun : MonoBehaviour
     private Material fallbackMaterial;
     private Texture2D softTexture;
     private Movement playerMovement;
+    private GunAutoAim autoAim;
     private Transform lastParent;
     private readonly RaycastHit[] raycastResults = new RaycastHit[32];
 
@@ -59,6 +60,7 @@ public class Gun : MonoBehaviour
     {
         if (ammunitionInventory == null) ammunitionInventory = GetComponent<AmmoInventory>();
         playerMovement = GetComponentInParent<Movement>();
+        autoAim = GetComponent<GunAutoAim>();
         ammunitionInMagazine = Mathf.Clamp(ammunitionInMagazine, 0, magazineCapacity);
         restingLocalPosition = transform.localPosition;
         lastParent = transform.parent;
@@ -119,6 +121,13 @@ public class Gun : MonoBehaviour
         playerMovement?.SetApuntando(true);
 
         Transform shotOrigin = muzzle != null ? muzzle : transform;
+
+        // Autoapuntado: si hay un enemigo a la vista, gira al jugador y dirige la bala hacia él.
+        Vector3 shotDirection = shotOrigin.forward;
+        Transform shooterBody = playerMovement != null ? playerMovement.transform : transform.root;
+        if (autoAim != null && autoAim.TryAim(shooterBody, shotOrigin, out Vector3 aimPoint))
+            shotDirection = (aimPoint - shotOrigin.position).normalized;
+
         ammunitionInMagazine--;
         nextShotTime = Time.time + (shotsPerSecond > 0f ? 1f / shotsPerSecond : 0f);
         AmmunitionChanged?.Invoke(ammunitionInMagazine, ReserveAmmo);
@@ -128,18 +137,27 @@ public class Gun : MonoBehaviour
 
         PlayMuzzleFlash(shotOrigin);
 
-        if (TryGetWorldHit(shotOrigin, out RaycastHit hit))
+        if (TryGetWorldHit(shotOrigin.position, shotDirection, out RaycastHit hit))
         {
             PlayImpactEffect(hit);
+
             Damageable target = hit.collider.GetComponentInParent<Damageable>();
-            if (target != null) target.TakeDamage(damage);
+            if (target != null)
+            {
+                target.TakeDamage(damage);
+            }
+            else
+            {
+                EnemyHealth enemy = hit.collider.GetComponentInParent<EnemyHealth>();
+                if (enemy != null) enemy.TakeDamage(damage);
+            }
         }
     }
 
-    private bool TryGetWorldHit(Transform shotOrigin, out RaycastHit closestHit)
+    private bool TryGetWorldHit(Vector3 origin, Vector3 direction, out RaycastHit closestHit)
     {
         closestHit = default;
-        int hitCount = Physics.RaycastNonAlloc(shotOrigin.position, shotOrigin.forward, raycastResults, range, hitLayers, QueryTriggerInteraction.Ignore);
+        int hitCount = Physics.RaycastNonAlloc(origin, direction, raycastResults, range, hitLayers, QueryTriggerInteraction.Ignore);
         float closestDistance = float.MaxValue;
         bool foundWorldHit = false;
 

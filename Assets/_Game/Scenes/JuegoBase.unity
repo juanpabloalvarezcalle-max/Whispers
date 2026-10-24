@@ -7926,6 +7926,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7020476977791176712, guid: 5b3c556b073fa4998b9a9bed88bb08e3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1530132372}
+    - targetCorrespondingSourceObject: {fileID: 7020476977791176712, guid: 5b3c556b073fa4998b9a9bed88bb08e3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1530132374}
     - targetCorrespondingSourceObject: {fileID: 6320786777480800232, guid: 5b3c556b073fa4998b9a9bed88bb08e3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1638637893}
@@ -9271,6 +9274,25 @@ MonoBehaviour:
   useMuzzleLight: 1
   muzzleLightIntensity: 3
   muzzleLightDuration: 0.05
+--- !u!114 &1530132374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1530132368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 200572a4865f34de8b85bfbc5165f0ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GunAutoAim
+  activo: 1
+  alcance: 20
+  anguloBusqueda: 180
+  girarAlJugador: 1
+  capasVision:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1001 &1540840610
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11428,6 +11450,7 @@ GameObject:
   - component: {fileID: 1877890227}
   - component: {fileID: 1877890231}
   - component: {fileID: 1877890230}
+  - component: {fileID: 1877890232}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -11549,6 +11572,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   alturaOjos: 0.5
+  distanciaOido: 3
   velocidadPersecucion: 1.6
   velocidadGiro: 360
   intervaloRuta: 0.2
@@ -11587,6 +11611,33 @@ NavMeshAgent:
   m_BaseOffset: 0.5
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &1877890232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1877890225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8107b6e3cf0cf458da280cc5b914b451, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 75
+  puntoDeApuntado: {fileID: 0}
+  animator: {fileID: 0}
+  parametroMuerte: Die
+  destruirAlMorir: 1
+  segundosHastaDesaparecer: 4
+  audioSource: {fileID: 0}
+  sonidoImpacto: {fileID: 0}
+  sonidoMuerte: {fileID: 0}
+  OnHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDied:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &1878080310
 PrefabInstance:
   m_ObjectHideFlags: 0

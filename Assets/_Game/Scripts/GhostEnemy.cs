@@ -2,12 +2,12 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// Enemigo tipo zombi: si el jugador entra en su rango de visión lo persigue,
+/// Enemigo tipo fantasma: si el jugador entra en su rango de visión lo persigue,
 /// y al llegar a distancia de golpe lo ataca cuerpo a cuerpo (cabezazo) haciendo daño.
 /// Requiere un NavMeshAgent y un NavMesh horneado en la escena.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
-public class ZombieEnemy : MonoBehaviour
+public class GhostEnemy : MonoBehaviour
 {
     private enum Estado { Reposo, Persiguiendo, Atacando }
 
@@ -25,6 +25,8 @@ public class ZombieEnemy : MonoBehaviour
     [SerializeField] private bool requiereLineaDeVision = true;
     [SerializeField] private LayerMask capasObstaculos = ~0;
     [SerializeField] private float alturaOjos = 1.6f;
+    [Tooltip("Si el jugador está más cerca que esto, lo detecta aunque esté fuera del cono de visión.")]
+    [SerializeField, Min(0f)] private float distanciaOido = 3f;
 
     [Header("Movimiento")]
     [SerializeField, Min(0.1f)] private float velocidadPersecucion = 1.6f;
@@ -85,7 +87,7 @@ public class ZombieEnemy : MonoBehaviour
         tieneParamVelocidad = TieneParametro(parametroVelocidad, AnimatorControllerParameterType.Float);
         tieneParamAtaque = TieneParametro(parametroAtaque, AnimatorControllerParameterType.Trigger);
 
-        if (jugador == null) jugador =FindAnyObjectByType<PlayerHealth>();
+        if (jugador == null) jugador = FindAnyObjectByType<PlayerHealth>();
         if (jugador == null)
             Debug.LogWarning("ZombieEnemy no encontró un PlayerHealth en la escena.", this);
     }
@@ -148,6 +150,7 @@ public class ZombieEnemy : MonoBehaviour
     private bool PuedeVerJugador(float distancia)
     {
         if (distancia > distanciaVision) return false;
+        if (distancia <= distanciaOido) return true;
 
         Vector3 haciaJugador = jugador.transform.position - transform.position;
         haciaJugador.y = 0f;
@@ -210,6 +213,8 @@ public class ZombieEnemy : MonoBehaviour
     /// </summary>
     public void AplicarGolpe()
     {
+        // Un enemigo muerto (script desactivado) no puede golpear aunque llegue el evento de animación.
+        if (!enabled) return;
         if (estado != Estado.Atacando || golpeAplicado) return;
         golpeAplicado = true;
 
@@ -279,6 +284,8 @@ public class ZombieEnemy : MonoBehaviour
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, distanciaVision);
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, distanciaOido);
         Gizmos.color = new Color(1f, 0.5f, 0f);
         Gizmos.DrawWireSphere(transform.position, distanciaPerdida);
         Gizmos.color = Color.red;
