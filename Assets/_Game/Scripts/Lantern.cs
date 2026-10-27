@@ -420,6 +420,11 @@ public class Lantern : MonoBehaviour
 
     private void ReproducirClick()
     {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.ReproducirLinterna(transform.position);
+            return;
+        }
         if (audioSource != null && sonidoInterruptor != null)
         {
             audioSource.PlayOneShot(sonidoInterruptor);

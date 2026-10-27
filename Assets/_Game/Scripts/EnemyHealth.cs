@@ -87,6 +87,8 @@ public class EnemyHealth : MonoBehaviour
 
         if (IsDead)
             Die();
+        else if (AudioManager.Instance != null)
+            AudioManager.Instance.ReproducirEnemigoHerido(transform.position);
         else if (audioSource != null && sonidoImpacto != null)
             audioSource.PlayOneShot(sonidoImpacto);
     }
@@ -113,7 +115,9 @@ public class EnemyHealth : MonoBehaviour
         if (animator != null && TieneParametroTrigger(parametroMuerte))
             animator.SetTrigger(parametroMuerte);
 
-        if (audioSource != null && sonidoMuerte != null)
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.ReproducirEnemigoMuere(transform.position);
+        else if (audioSource != null && sonidoMuerte != null)
             audioSource.PlayOneShot(sonidoMuerte);
 
         OnDied?.Invoke();

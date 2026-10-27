@@ -275,6 +275,11 @@ public class GhostEnemy : MonoBehaviour
 
     private void Reproducir(AudioClip clip)
     {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.ReproducirEnemigo(transform.position);
+            return;
+        }
         if (audioSource != null && clip != null)
             audioSource.PlayOneShot(clip);
     }

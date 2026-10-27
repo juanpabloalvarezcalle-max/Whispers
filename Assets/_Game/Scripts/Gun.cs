@@ -16,6 +16,7 @@ public class Gun : MonoBehaviour
     [SerializeField, Min(0.1f)] private float range = 30f;
     [SerializeField, Min(0f)] private float shotsPerSecond = 3f;
     [SerializeField] private LayerMask hitLayers = ~0;
+    [SerializeField] private AudioClip sonidoDisparo;
 
     [Header("Respuesta del arma")]
     [SerializeField, Min(0f)] private float recoilDistance = 0.045f;
@@ -37,7 +38,6 @@ public class Gun : MonoBehaviour
     private Vector3 restingLocalPosition;
     private float currentRecoil;
     private AudioSource shotAudioSource;
-    private AudioClip generatedShotClip;
     private ParticleSystem impactEffect;
     private ParticleSystem muzzleFlash;
     private ParticleSystem muzzleSparks;
@@ -69,7 +69,7 @@ public class Gun : MonoBehaviour
         if (shotAudioSource == null) shotAudioSource = gameObject.AddComponent<AudioSource>();
         shotAudioSource.playOnAwake = false;
         shotAudioSource.spatialBlend = 0f;
-        generatedShotClip = CreateGeneratedShotClip();
+        if (sonidoDisparo == null) sonidoDisparo = shotAudioSource.clip;
     }
 
     private void Update()
@@ -92,7 +92,6 @@ public class Gun : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (generatedShotClip != null) Destroy(generatedShotClip);
         if (impactEffect != null) Destroy(impactEffect.gameObject);
         if (fallbackMaterial != null) Destroy(fallbackMaterial);
         if (softTexture != null) Destroy(softTexture);
@@ -132,8 +131,8 @@ public class Gun : MonoBehaviour
         nextShotTime = Time.time + (shotsPerSecond > 0f ? 1f / shotsPerSecond : 0f);
         AmmunitionChanged?.Invoke(ammunitionInMagazine, ReserveAmmo);
         currentRecoil = recoilDistance;
-        if (shotAudioSource != null && generatedShotClip != null)
-            shotAudioSource.PlayOneShot(generatedShotClip, shotVolume);
+        if (shotAudioSource != null && sonidoDisparo != null)
+            shotAudioSource.PlayOneShot(sonidoDisparo, shotVolume);
 
         PlayMuzzleFlash(shotOrigin);
 
@@ -397,29 +396,6 @@ public class Gun : MonoBehaviour
         impactEffect.transform.SetPositionAndRotation(hit.point + hit.normal * 0.01f, Quaternion.LookRotation(hit.normal));
         impactEffect.Clear(true);
         impactEffect.Play(true);
-    }
-
-    private AudioClip CreateGeneratedShotClip()
-    {
-        const int sampleRate = 22050;
-        const float duration = 0.2f;
-        int sampleCount = Mathf.CeilToInt(sampleRate * duration);
-        float[] samples = new float[sampleCount];
-        uint noiseState = 0xA341316Cu;
-
-        for (int i = 0; i < sampleCount; i++)
-        {
-            float time = i / (float)sampleRate;
-            noiseState = 1664525u * noiseState + 1013904223u;
-            float noise = ((noiseState >> 8) / 8388607.5f) - 1f;
-            float transient = noise * Mathf.Exp(-time * 48f) * 0.48f;
-            float lowThump = Mathf.Sin(time * Mathf.PI * 2f * 78f) * Mathf.Exp(-time * 19f) * 0.52f;
-            samples[i] = Mathf.Clamp(transient + lowThump, -1f, 1f);
-        }
-
-        AudioClip clip = AudioClip.Create("Disparo procedural", sampleCount, 1, sampleRate, false);
-        clip.SetData(samples, 0);
-        return clip;
     }
 
     public void Reload()

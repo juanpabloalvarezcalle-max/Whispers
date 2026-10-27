@@ -1077,6 +1077,77 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.66193, y: 2.8713412, z: 4.7582254}
   m_Center: {x: 0.16903496, y: 0.9356706, z: -1.2579997}
+--- !u!1 &126041627
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 126041630}
+  - component: {fileID: 126041629}
+  - component: {fileID: 126041628}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &126041628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126041627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89008a13a71d64f1eaf55b75aca4b983, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  efectosSource: {fileID: 0}
+  ambienteSource: {fileID: 0}
+  volumenEfectos: 1
+  pasos: {fileID: 0}
+  sacarArma: {fileID: 8300000, guid: e2e26fdbb80d44455bf6b77b7b157b13, type: 3}
+  linterna: {fileID: 0}
+  radio: {fileID: 8300000, guid: 9c2831b19da244d7f94840e1bf1083a0, type: 3}
+  jugadorHerido: {fileID: 0}
+  jugadorMuere: {fileID: 8300000, guid: f35fb78a1293d4f07a737bfebd5fb1bd, type: 3}
+  intervaloPasos: 0.4
+  enemigo: {fileID: 8300000, guid: 68e9295d4ff9d4dcd83fbc84313597a7, type: 3}
+  enemigoHerido: {fileID: 0}
+  enemigoMuere: {fileID: 0}
+  boss: {fileID: 0}
+  bossHerido: {fileID: 0}
+  bossMuere: {fileID: 8300000, guid: 39a29a681c80d41b790fce8084019e14, type: 3}
+  bosque: {fileID: 8300000, guid: f23f80eeeac7a427e92f701dd2f53ce7, type: 3}
+  volumenBosque: 0.6
+--- !u!81 &126041629
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126041627}
+  m_Enabled: 1
+--- !u!4 &126041630
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126041627}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.5, y: 0, z: 20.58954}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &155220730
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2121,8 +2192,8 @@ Camera:
   m_GameObject: {fileID: 330585543}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.1882353, g: 0.21568628, b: 0.21176471, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -9265,6 +9336,7 @@ MonoBehaviour:
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+  sonidoDisparo: {fileID: 0}
   recoilDistance: 0.045
   recoilReturnSpeed: 0.35
   shotVolume: 0.65
@@ -12738,8 +12810,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Cargador: '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 87c0cefd4124cf045a0d9ed9fad378a2, type: 2}
+  m_sharedMaterial: {fileID: 933142883857851454, guid: 87c0cefd4124cf045a0d9ed9fad378a2, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -13359,3 +13431,4 @@ SceneRoots:
   - {fileID: 1127119712}
   - {fileID: 1665474783}
   - {fileID: 1726883592}
+  - {fileID: 126041630}

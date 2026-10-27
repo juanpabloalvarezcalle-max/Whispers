@@ -142,6 +142,9 @@ public class Movement : MonoBehaviour
             move = Vector3.zero;
         }
 
+        if (move.sqrMagnitude > 0.01f && AudioManager.Instance != null)
+            AudioManager.Instance.ReproducirPasos(transform.position);
+
         // El parámetro Velocidad controla el cambio entre Iddle y CaminarLinterna.
         // Suavizamos el valor para evitar cambios bruscos al mover el joystick.
         if (animator != null)
@@ -230,6 +233,7 @@ public class Movement : MonoBehaviour
     // Estos métodos son los "enchufes" que llaman los botones y las mecánicas.
     public void EquiparPistola()
     {
+        bool estabaGuardada = !armaSacada;
         if (radioEnUso) TerminarRadio(false);
         if (bolilloEnUso) TerminarBolillo(false);
         if (lantern != null) lantern.ApagarPorArma();
@@ -242,6 +246,7 @@ public class Movement : MonoBehaviour
         armaSacada = true;
         guardarArmaEn = Time.time + segundosParaGuardarArma;
         SetBool(PistolEquippedParameter, true);
+        if (estabaGuardada) AudioManager.Instance?.ReproducirSacarArma(transform.position);
     }
 
     public void GuardarPistola()
@@ -277,6 +282,7 @@ public class Movement : MonoBehaviour
         lantern?.ApagarPorArma();
 
         radioEnUso = true;
+        AudioManager.Instance?.ReproducirRadio(transform.position);
         radioEntroAlEstado = false;
         radioInicio = Time.time;
         animator.SetTrigger(RadioTriggerParameter);
