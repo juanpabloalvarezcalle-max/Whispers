@@ -101,7 +101,7 @@ public class Movement : MonoBehaviour
         batonProp = CacheProp(characterRoot, "Bolillo");
         testGun = GetComponentInChildren<Gun>();
         lantern = GetComponentInChildren<Lantern>(true);
-        if (lantern == null) lantern = FindFirstObjectByType<Lantern>();
+        if (lantern == null) lantern = FindAnyObjectByType<Lantern>();
         radioStateHash = Animator.StringToHash(radioStateName);
         if (animator != null) armsLayer = animator.GetLayerIndex(armsLayerName);
 

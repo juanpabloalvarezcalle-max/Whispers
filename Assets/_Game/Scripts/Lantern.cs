@@ -84,7 +84,7 @@ public class Lantern : MonoBehaviour
         playerMovement = GetComponentInParent<Movement>();
 
         if (inventarioBaterias == null) inventarioBaterias = GetComponentInParent<BatteryInventory>();
-        if (inventarioBaterias == null) inventarioBaterias = FindFirstObjectByType<BatteryInventory>();
+        if (inventarioBaterias == null) inventarioBaterias = FindAnyObjectByType<BatteryInventory>();
 
         if (linterna != null)
         {
