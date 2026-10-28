@@ -1086,7 +1086,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 126041630}
-  - component: {fileID: 126041629}
   - component: {fileID: 126041628}
   m_Layer: 0
   m_Name: AudioManager
@@ -1125,14 +1124,6 @@ MonoBehaviour:
   bossMuere: {fileID: 8300000, guid: 39a29a681c80d41b790fce8084019e14, type: 3}
   bosque: {fileID: 8300000, guid: f23f80eeeac7a427e92f701dd2f53ce7, type: 3}
   volumenBosque: 0.6
---- !u!81 &126041629
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 126041627}
-  m_Enabled: 1
 --- !u!4 &126041630
 Transform:
   m_ObjectHideFlags: 0
