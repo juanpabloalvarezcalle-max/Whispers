@@ -38,7 +38,15 @@ public class PlayerHealth : MonoBehaviour
         currentHealth = Mathf.Max(0f, currentHealth - amount);
         OnHealthChanged?.Invoke(Normalized);
 
-        if (IsDead) OnDied?.Invoke();
+        if (IsDead)
+        {
+            AudioManager.Instance?.ReproducirJugadorMuere(transform.position);
+            OnDied?.Invoke();
+        }
+        else
+        {
+            AudioManager.Instance?.ReproducirJugadorHerido(transform.position);
+        }
     }
 
     /// <summary>Suma vida sin pasar del máximo. No revive a un jugador que ya murió.</summary>

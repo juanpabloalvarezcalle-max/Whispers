@@ -54,10 +54,11 @@ public class GunAutoAim : MonoBehaviour
 
         if (girarAlJugador)
         {
-            Vector3 haciaEnemigo = puntoDeApuntado - cuerpo.position;
-            haciaEnemigo.y = 0f;
-            if (haciaEnemigo.sqrMagnitude > 0.01f)
-                cuerpo.rotation = Quaternion.LookRotation(haciaEnemigo.normalized, Vector3.up);
+            // Se mira al enemigo a la altura del propio jugador: así solo gira en horizontal
+            // y el personaje no se inclina hacia arriba o abajo.
+            Vector3 puntoPlano = new Vector3(puntoDeApuntado.x, cuerpo.position.y, puntoDeApuntado.z);
+            if ((puntoPlano - cuerpo.position).sqrMagnitude > 0.01f)
+                cuerpo.LookAt(puntoPlano);
         }
 
         return true;
