@@ -10,8 +10,8 @@ public class GunAutoAim : MonoBehaviour
     [SerializeField] private bool activo = true;
     [Tooltip("Distancia máxima a la que el arma se engancha a un enemigo.")]
     [SerializeField, Min(1f)] private float alcance = 20f;
-    [Tooltip("Ángulo total (frente al jugador) en el que busca enemigos. 360 = a su alrededor.")]
-    [SerializeField, Range(30f, 360f)] private float anguloBusqueda = 180f;
+    [Tooltip("Ángulo total en el que busca enemigos. 360 permite apuntar en cualquier dirección.")]
+    [SerializeField, Range(30f, 360f)] private float anguloBusqueda = 360f;
     [Tooltip("Gira al jugador hacia el enemigo al disparar.")]
     [SerializeField] private bool girarAlJugador = true;
     [Tooltip("Capas que pueden bloquear la línea de tiro (paredes, árboles...).")]
@@ -48,17 +48,21 @@ public class GunAutoAim : MonoBehaviour
             mejorDistancia = distancia;
         }
 
-        if (mejor == null) return false;
+        if (mejor == null)
+        {
+            cuerpo.GetComponent<Movement>()?.SetAimDirection(Vector3.zero);
+            return false;
+        }
 
         puntoDeApuntado = mejor.AimPoint;
 
         if (girarAlJugador)
         {
-            // Se mira al enemigo a la altura del propio jugador: así solo gira en horizontal
-            // y el personaje no se inclina hacia arriba o abajo.
-            Vector3 puntoPlano = new Vector3(puntoDeApuntado.x, cuerpo.position.y, puntoDeApuntado.z);
-            if ((puntoPlano - cuerpo.position).sqrMagnitude > 0.01f)
-                cuerpo.LookAt(puntoPlano);
+            // Movement aplica el giro en FixedUpdate sobre el Rigidbody. Cambiar
+            // el Transform aquí se pierde cuando la física escribe la rotación.
+            Movement movimiento = cuerpo.GetComponent<Movement>();
+            if (movimiento != null)
+                movimiento.SetAimDirection(puntoDeApuntado - cuerpo.position);
         }
 
         return true;

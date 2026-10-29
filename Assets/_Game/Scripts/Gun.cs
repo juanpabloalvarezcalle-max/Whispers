@@ -46,6 +46,7 @@ public class Gun : MonoBehaviour
     private Material fallbackMaterial;
     private Texture2D softTexture;
     private Movement playerMovement;
+    private CameraTargetController cameraTargetController;
     private GunAutoAim autoAim;
     private Transform lastParent;
     private readonly RaycastHit[] raycastResults = new RaycastHit[32];
@@ -60,6 +61,7 @@ public class Gun : MonoBehaviour
     {
         if (ammunitionInventory == null) ammunitionInventory = GetComponent<AmmoInventory>();
         playerMovement = GetComponentInParent<Movement>();
+        cameraTargetController = FindAnyObjectByType<CameraTargetController>();
         autoAim = GetComponent<GunAutoAim>();
         ammunitionInMagazine = Mathf.Clamp(ammunitionInMagazine, 0, magazineCapacity);
         restingLocalPosition = transform.localPosition;
@@ -131,8 +133,13 @@ public class Gun : MonoBehaviour
         nextShotTime = Time.time + (shotsPerSecond > 0f ? 1f / shotsPerSecond : 0f);
         AmmunitionChanged?.Invoke(ammunitionInMagazine, ReserveAmmo);
         currentRecoil = recoilDistance;
-        if (shotAudioSource != null && sonidoDisparo != null)
-            shotAudioSource.PlayOneShot(sonidoDisparo, shotVolume);
+        cameraTargetController?.TemblarPorDisparo();
+        if (sonidoDisparo != null)
+        {
+            // Cada disparo usa una fuente temporal independiente para que las
+            // pulsaciones rápidas no corten ni bloqueen la reproducción anterior.
+            AudioSource.PlayClipAtPoint(sonidoDisparo, shotOrigin.position, shotVolume);
+        }
 
         PlayMuzzleFlash(shotOrigin);
 

@@ -16,11 +16,11 @@ public class GhostEnemy : MonoBehaviour
     [SerializeField] private PlayerHealth jugador;
 
     [Header("Detección")]
-    [SerializeField, Min(1f)] private float distanciaVision = 10f;
+    [SerializeField, Min(1f)] private float distanciaVision = 20f;
     [Tooltip("Una vez que te ve, te sigue hasta que te alejes más de esta distancia.")]
-    [SerializeField, Min(1f)] private float distanciaPerdida = 16f;
+    [SerializeField, Min(1f)] private float distanciaPerdida = 28f;
     [Tooltip("Ángulo total de visión frente al zombi. 360 = te detecta en todas direcciones.")]
-    [SerializeField, Range(30f, 360f)] private float anguloVision = 140f;
+    [SerializeField, Range(30f, 360f)] private float anguloVision = 360f;
     [Tooltip("Si está activo, las paredes bloquean la visión.")]
     [SerializeField] private bool requiereLineaDeVision = true;
     [SerializeField] private LayerMask capasObstaculos = ~0;
@@ -35,7 +35,7 @@ public class GhostEnemy : MonoBehaviour
     [SerializeField, Min(0.05f)] private float intervaloRuta = 0.2f;
 
     [Header("Ataque")]
-    [SerializeField, Min(0.5f)] private float distanciaAtaque = 1.5f;
+    [SerializeField, Min(0.5f)] private float distanciaAtaque = 2.5f;
     [SerializeField, Min(1f)] private float dano = 15f;
     [Tooltip("Segundos entre el inicio de un golpe y el siguiente.")]
     [SerializeField, Min(0.2f)] private float tiempoEntreAtaques = 2f;
@@ -71,6 +71,7 @@ public class GhostEnemy : MonoBehaviour
     private int hashAtaque;
     private bool tieneParamVelocidad;
     private bool tieneParamAtaque;
+    private readonly RaycastHit[] resultadosVision = new RaycastHit[32];
 
     private void Awake()
     {
@@ -162,10 +163,33 @@ public class GhostEnemy : MonoBehaviour
 
         Vector3 origen = transform.position + Vector3.up * alturaOjos;
         Vector3 destino = jugador.transform.position + Vector3.up * alturaOjos * 0.8f;
-        if (Physics.Linecast(origen, destino, out RaycastHit golpe, capasObstaculos, QueryTriggerInteraction.Ignore))
-            return golpe.transform.IsChildOf(jugador.transform);
+        Vector3 rayo = destino - origen;
+        float distanciaRayo = rayo.magnitude;
+        if (distanciaRayo <= 0.01f) return true;
 
-        return true;
+        int cantidad = Physics.RaycastNonAlloc(origen, rayo / distanciaRayo, resultadosVision,
+            distanciaRayo, capasObstaculos, QueryTriggerInteraction.Ignore);
+        float distanciaPrimerImpacto = float.MaxValue;
+        Transform primerImpacto = null;
+
+        for (int i = 0; i < cantidad; i++)
+        {
+            RaycastHit golpe = resultadosVision[i];
+            if (golpe.collider == null) continue;
+            // Ignora el collider del propio enemigo, incluido el caso en que el
+            // origen del rayo empiece dentro de él.
+            if (golpe.transform == transform || golpe.transform.IsChildOf(transform)) continue;
+            if (golpe.distance >= distanciaPrimerImpacto) continue;
+
+            distanciaPrimerImpacto = golpe.distance;
+            primerImpacto = golpe.transform;
+        }
+
+        if (primerImpacto == null) return true;
+
+        // El collider principal puede estar en el mismo objeto que PlayerHealth,
+        // o en cualquiera de sus hijos.
+        return primerImpacto == jugador.transform || primerImpacto.IsChildOf(jugador.transform);
     }
 
     private void Perseguir(float distancia)

@@ -564,7 +564,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GunAutoAim
   activo: 1
   alcance: 20
-  anguloBusqueda: 180
+  anguloBusqueda: 360
   girarAlJugador: 1
   capasVision:
     serializedVersion: 2
@@ -588,6 +588,7 @@ MonoBehaviour:
   damage: 25
   range: 30
   shotsPerSecond: 3
+  sonidoDisparo: {fileID: 8300000, guid: e2e26fdbb80d44455bf6b77b7b157b13, type: 3}
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295

@@ -29,6 +29,8 @@ public class Movement : MonoBehaviour
 
     private Rigidbody rb;
     private Vector3 move;
+    private Vector3 aimDirection;
+    private bool hasAimDirection;
     private Transform cam;
     private Transform rightHand;
     private Transform leftHand;
@@ -87,6 +89,9 @@ public class Movement : MonoBehaviour
         batonStateHash = Animator.StringToHash(batonStateName);
         rb = GetComponent<Rigidbody>();
         rb.interpolation = RigidbodyInterpolation.Interpolate;
+        // El personaje necesita girar sobre el eje Y para mirar al objetivo.
+        // Se conservan las demás restricciones configuradas en el Rigidbody.
+        rb.constraints &= ~RigidbodyConstraints.FreezeRotationY;
         cam = Camera.main.transform;
         if (animator == null)
         {
@@ -216,11 +221,24 @@ public class Movement : MonoBehaviour
         targetVelocity.y = rb.linearVelocity.y;
         rb.linearVelocity = targetVelocity;
 
-        if (move.sqrMagnitude > 0.01f)
+        if (hasAimDirection && PistolaSacada && aimDirection.sqrMagnitude > 0.01f)
+        {
+            Quaternion target = Quaternion.LookRotation(aimDirection);
+            rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, target, rotationSpeed * Time.fixedDeltaTime));
+        }
+        else if (move.sqrMagnitude > 0.01f)
         {
             Quaternion target = Quaternion.LookRotation(move);
-            rb.rotation = Quaternion.RotateTowards(rb.rotation, target, rotationSpeed * Time.fixedDeltaTime);
+            rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, target, rotationSpeed * Time.fixedDeltaTime));
         }
+    }
+
+    /// <summary>Solicita que el cuerpo mire hacia una dirección horizontal al apuntar.</summary>
+    public void SetAimDirection(Vector3 direction)
+    {
+        direction.y = 0f;
+        hasAimDirection = direction.sqrMagnitude > 0.01f;
+        aimDirection = hasAimDirection ? direction.normalized : Vector3.zero;
     }
 
     private void SetPistolTestRotation(Vector3 rotation)
