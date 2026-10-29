@@ -229,6 +229,10 @@ MonoBehaviour:
   batonStateName: BrazosBolillo
   bolilloTomadoEn: 0.2
   bolilloGuardadoEn: 1
+  danoBolillo: 45
+  alcanceBolillo: 2.2
+  anguloGolpeBolillo: 120
+  aplicarGolpeEn: 0.45
 --- !u!114 &50916142
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -585,7 +589,7 @@ MonoBehaviour:
   ammunitionInMagazine: 5
   ammunitionInventory: {fileID: 50916140}
   muzzle: {fileID: 939629013}
-  damage: 25
+  damage: 35
   range: 30
   shotsPerSecond: 3
   sonidoDisparo: {fileID: 8300000, guid: e2e26fdbb80d44455bf6b77b7b157b13, type: 3}

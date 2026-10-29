@@ -4108,6 +4108,45 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.66193, y: 2.8713412, z: 4.7582254}
   m_Center: {x: 0.16903496, y: 0.9356706, z: -1.2579997}
+--- !u!1 &617688032 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 533038741550014589, guid: 7893c066db1179443bc10db55958bdc8, type: 3}
+  m_PrefabInstance: {fileID: 1527217802058876155}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &617688036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 617688032}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12a370edc9364ab0a53a88905e8e22c8, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AmmoPickup
+  amount: 10
+--- !u!65 &617688037
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 617688032}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.025196906, y: 0.04999239, z: 0.09999999}
+  m_Center: {x: 0, y: 0, z: -0.00000023841858}
 --- !u!1 &619403666
 GameObject:
   m_ObjectHideFlags: 0
@@ -5747,6 +5786,10 @@ MonoBehaviour:
   batonStateName: BrazosBolillo
   bolilloTomadoEn: 0.2
   bolilloGuardadoEn: 1
+  danoBolillo: 45
+  alcanceBolillo: 2.2
+  anguloGolpeBolillo: 120
+  aplicarGolpeEn: 0.45
 --- !u!54 &894128433
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9451,7 +9494,7 @@ MonoBehaviour:
   ammunitionInMagazine: 5
   ammunitionInventory: {fileID: 277000005}
   muzzle: {fileID: 277000004}
-  damage: 25
+  damage: 35
   range: 30
   shotsPerSecond: 3
   hitLayers:
@@ -13471,7 +13514,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 533038741550014589, guid: 7893c066db1179443bc10db55958bdc8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 617688037}
+    - targetCorrespondingSourceObject: {fileID: 533038741550014589, guid: 7893c066db1179443bc10db55958bdc8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 617688036}
   m_SourcePrefab: {fileID: 100100000, guid: 7893c066db1179443bc10db55958bdc8, type: 3}
 --- !u!1001 &9082205878433381016
 PrefabInstance:

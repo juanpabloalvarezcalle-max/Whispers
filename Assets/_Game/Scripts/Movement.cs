@@ -74,11 +74,20 @@ public class Movement : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float bolilloTomadoEn = 0.2f;
     [Tooltip("Punto del clip (0 = inicio, 1 = final) en que el bolillo vuelve a su lugar.")]
     [SerializeField, Range(0f, 1f)] private float bolilloGuardadoEn = 1f;
+    [Tooltip("Daño que hace cada golpe del bolillo.")]
+    [SerializeField, Min(0f)] private float danoBolillo = 45f;
+    [Tooltip("Distancia horizontal máxima para alcanzar al enemigo con el bolillo.")]
+    [SerializeField, Min(0.1f)] private float alcanceBolillo = 2.2f;
+    [Tooltip("Ángulo frontal dentro del que el golpe puede alcanzar al enemigo.")]
+    [SerializeField, Range(0f, 180f)] private float anguloGolpeBolillo = 120f;
+    [Tooltip("Momento del clip en que el golpe aplica daño (0 = inicio, 1 = final).")]
+    [SerializeField, Range(0f, 1f)] private float aplicarGolpeEn = 0.45f;
 
     private int batonStateHash;
     private bool bolilloEnUso;
     private bool bolilloEntroAlEstado;
     private bool bolilloPoseActive;
+    private bool golpeBolilloAplicado;
     private float bolilloInicio;
 
     public bool BolilloEnUso => bolilloEnUso;
@@ -358,10 +367,9 @@ public class Movement : MonoBehaviour
 
         bolilloEnUso = true;
         bolilloEntroAlEstado = false;
+        golpeBolilloAplicado = false;
         bolilloInicio = Time.time;
         animator.SetTrigger(PunchParameter);
-
-        // Aquí se conectará el daño cuerpo a cuerpo cuando exista.
     }
 
     private void UpdateBatonAttachment()
@@ -374,6 +382,9 @@ public class Movement : MonoBehaviour
         {
             bolilloEntroAlEstado = true;
             float progreso = state.normalizedTime;
+
+            if (!golpeBolilloAplicado && progreso >= aplicarGolpeEn)
+                AplicarDanoBolillo();
 
             if (!bolilloPoseActive && progreso >= bolilloTomadoEn && progreso < bolilloGuardadoEn)
             {
@@ -411,6 +422,34 @@ public class Movement : MonoBehaviour
         }
 
         if (reanudarLinterna) lantern?.ReanudarTrasArma();
+    }
+
+    private void AplicarDanoBolillo()
+    {
+        golpeBolilloAplicado = true;
+        if (danoBolillo <= 0f) return;
+
+        EnemyHealth objetivo = null;
+        float distanciaObjetivo = float.MaxValue;
+
+        for (int i = 0; i < EnemyHealth.Active.Count; i++)
+        {
+            EnemyHealth enemigo = EnemyHealth.Active[i];
+            if (enemigo == null || enemigo.IsDead) continue;
+
+            Vector3 haciaEnemigo = enemigo.AimPoint - transform.position;
+            haciaEnemigo.y = 0f;
+            float distancia = haciaEnemigo.magnitude;
+            if (distancia > alcanceBolillo || distancia >= distanciaObjetivo) continue;
+            if (distancia > 0.01f && Vector3.Angle(transform.forward, haciaEnemigo) > anguloGolpeBolillo * 0.5f)
+                continue;
+
+            objetivo = enemigo;
+            distanciaObjetivo = distancia;
+        }
+
+        if (objetivo != null)
+            objetivo.TakeDamage(danoBolillo);
     }
     private void UpdateRadioAttachment()
     {

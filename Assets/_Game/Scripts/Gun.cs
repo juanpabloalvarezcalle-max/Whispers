@@ -12,7 +12,7 @@ public class Gun : MonoBehaviour
 
     [Header("Disparo")]
     [SerializeField] private Transform muzzle;
-    [SerializeField, Min(0f)] private float damage = 25f;
+    [SerializeField, Min(0f)] private float damage = 35f;
     [SerializeField, Min(0.1f)] private float range = 30f;
     [SerializeField, Min(0f)] private float shotsPerSecond = 3f;
     [SerializeField] private LayerMask hitLayers = ~0;
