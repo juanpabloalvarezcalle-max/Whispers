@@ -42,6 +42,11 @@ public class PlayerHealth : MonoBehaviour
         {
             AudioManager.Instance?.ReproducirJugadorMuere(transform.position);
             OnDied?.Invoke();
+
+            // No hay una animación de muerte conectada todavía: por ahora,
+            // al llegar a cero se reinicia la escena con el fundido existente.
+            if (TransitionManager.Instance != null)
+                TransitionManager.Instance.ReloadLevel();
         }
         else
         {

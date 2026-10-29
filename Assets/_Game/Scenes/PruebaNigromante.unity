@@ -336,52 +336,33 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 125498469}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1837126152}
-        m_TargetAssemblyTypeName: Gun, Assembly-CSharp
-        m_MethodName: Shoot
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &125498469
+  m_EditorClassIdentifier: Assembly-CSharp::Movement
+  joystick: {fileID: 0}
+  speed: 5
+  rotationSpeed: 540
+  movementDeadZone: 0.15
+  animator: {fileID: 448016589}
+  pistolHandPosition: {x: -0.05, y: 0.12, z: 0.03}
+  pistolHandRotation: {x: 354.4, y: -90, z: -184.6}
+  flashlightHandPosition: {x: 0, y: 0.03, z: 0.02}
+  flashlightHandRotation: {x: 0, y: 180, z: -96}
+  radioHandPosition: {x: -0.03, y: 0.02, z: 0.04}
+  radioHandRotation: {x: 0, y: 0, z: -90}
+  batonHandPosition: {x: -0.05, y: -0.1, z: 0}
+  batonHandRotation: {x: 7, y: -94, z: 175}
+  segundosParaGuardarArma: 3
+  radioStateName: BrazosRadio
+  armsLayerName: Brazos
+  radioTomadaEn: 0.1
+  radioGuardadaEn: 0.8
+  batonStateName: BrazosBolillo
+  bolilloTomadoEn: 0.2
+  bolilloGuardadoEn: 1
+  danoBolillo: 45
+  alcanceBolillo: 2.2
+  anguloGolpeBolillo: 120
+  aplicarGolpeEn: 0.45
+--- !u!114 &50916142
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -731,20 +712,20 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 187470463}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1200180982}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 521, y: -446.58002}
-  m_SizeDelta: {x: 176.84, y: 176.84}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &187470465
+  m_GameObject: {fileID: 448016591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 200572a4865f34de8b85bfbc5165f0ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GunAutoAim
+  activo: 1
+  alcance: 20
+  anguloBusqueda: 360
+  girarAlJugador: 1
+  capasVision:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &448016595
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -755,52 +736,28 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 187470466}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1837126152}
-        m_TargetAssemblyTypeName: Gun, Assembly-CSharp
-        m_MethodName: Reload
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &187470466
+  m_EditorClassIdentifier: Assembly-CSharp::Gun
+  magazineCapacity: 5
+  ammunitionInMagazine: 5
+  ammunitionInventory: {fileID: 50916140}
+  muzzle: {fileID: 939629013}
+  damage: 35
+  range: 30
+  shotsPerSecond: 3
+  sonidoDisparo: {fileID: 8300000, guid: e2e26fdbb80d44455bf6b77b7b157b13, type: 3}
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  recoilDistance: 0.045
+  recoilReturnSpeed: 0.35
+  shotVolume: 0.65
+  particleMaterial: {fileID: 2100000, guid: bc05dd8f487054639af93a4672fab760, type: 2}
+  muzzleFlashColor: {r: 1, g: 0.75, b: 0.3, a: 1}
+  muzzleFlashSize: 0.22
+  useMuzzleLight: 1
+  muzzleLightIntensity: 3
+  muzzleLightDuration: 0.05
+--- !u!114 &448016596
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
