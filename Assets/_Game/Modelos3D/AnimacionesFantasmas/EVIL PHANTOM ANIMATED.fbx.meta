@@ -3,7 +3,17 @@ guid: d4bb45ccbbadb9b408e70e20d605ac11
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tulle procedural material
+    second: {fileID: -876546973899608171, guid: 17ba838936f88d64ebea02c59dad67cd, type: 3}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: eyeballs
+    second: {fileID: 2100000, guid: ac0878b4686029042839799373e7a8a0, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
