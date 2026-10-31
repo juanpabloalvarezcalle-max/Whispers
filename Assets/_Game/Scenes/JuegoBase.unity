@@ -4136,7 +4136,7 @@ GameObject:
   - component: {fileID: 668805738}
   - component: {fileID: 668805737}
   m_Layer: 0
-  m_Name: Terrain
+  m_Name: JuegoBaseTerreno
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

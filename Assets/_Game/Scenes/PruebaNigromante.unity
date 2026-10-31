@@ -313,7 +313,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1768285600}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &603746441
+--- !u!114 &781802315 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4192452531195090557, guid: 98cb331c64fa56849b44d2308a200749, type: 3}
+  m_PrefabInstance: {fileID: 866081724}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45977bbae16431c46a013576a1aea384, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1 &846595511
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -321,23 +332,23 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 603746444}
-  - component: {fileID: 603746443}
-  - component: {fileID: 603746442}
+  - component: {fileID: 846595514}
+  - component: {fileID: 846595513}
+  - component: {fileID: 846595512}
   m_Layer: 0
-  m_Name: Terrain
+  m_Name: TerrenoBoss
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
   m_IsActive: 1
---- !u!154 &603746442
+--- !u!154 &846595512
 TerrainCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 603746441}
+  m_GameObject: {fileID: 846595511}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -349,20 +360,20 @@ TerrainCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_TerrainData: {fileID: 15600000, guid: aa9a67859dafd4b11a8597b97e97ef39, type: 2}
+  m_TerrainData: {fileID: 15600000, guid: 281bdb7531bf70043a0a79150f638d4a, type: 2}
   m_EnableTreeColliders: 1
---- !u!218 &603746443
+--- !u!218 &846595513
 Terrain:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 603746441}
+  m_GameObject: {fileID: 846595511}
   m_Enabled: 1
   serializedVersion: 6
-  m_TerrainData: {fileID: 15600000, guid: aa9a67859dafd4b11a8597b97e97ef39, type: 2}
-  m_TreeDistance: 80
-  m_TreeBillboardDistance: 40
+  m_TerrainData: {fileID: 15600000, guid: 281bdb7531bf70043a0a79150f638d4a, type: 2}
+  m_TreeDistance: 5000
+  m_TreeBillboardDistance: 50
   m_TreeCrossFadeLength: 5
   m_TreeMaximumFullLODCount: 50
   m_DetailObjectDistance: 80
@@ -392,33 +403,21 @@ Terrain:
   m_EnableTreesAndDetailsRayTracing: 0
   m_EnableHeightmapLODFrustumCulling: 1
   m_TreeMotionVectorModeOverride: 3
---- !u!4 &603746444
+--- !u!4 &846595514
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 603746441}
+  m_GameObject: {fileID: 846595511}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -16.17, y: 0, z: -25.98}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -55.1, y: 0, z: -70.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1414205025}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &781802315 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4192452531195090557, guid: 98cb331c64fa56849b44d2308a200749, type: 3}
-  m_PrefabInstance: {fileID: 866081724}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45977bbae16431c46a013576a1aea384, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &866081724
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -828,15 +827,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 32d00379f53a38c47abe39b9a6413be6, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.921933
+      value: 7.78
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 32d00379f53a38c47abe39b9a6413be6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 32d00379f53a38c47abe39b9a6413be6, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -13.058907
+      value: -14.13
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 32d00379f53a38c47abe39b9a6413be6, type: 3}
       propertyPath: m_LocalRotation.w
@@ -891,7 +890,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1414205025
 Transform:
   m_ObjectHideFlags: 0
@@ -901,11 +900,11 @@ Transform:
   m_GameObject: {fileID: 1414205024}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 21.3, y: 0, z: 37.78923}
+  m_LocalPosition: {x: 5.129999, y: 0, z: 11.809231}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 603746444}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1414205026
 MonoBehaviour:
@@ -1399,7 +1398,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d4bb45ccbbadb9b408e70e20d605ac11, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.8539596
+      value: 7.7120266
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d4bb45ccbbadb9b408e70e20d605ac11, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1407,7 +1406,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d4bb45ccbbadb9b408e70e20d605ac11, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -15.615344
+      value: -16.686438
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d4bb45ccbbadb9b408e70e20d605ac11, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1839,7 +1838,6 @@ BoxCollider:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 603746444}
   - {fileID: 2485108781980444500}
   - {fileID: 1264961345}
   - {fileID: 1854655711}
@@ -1849,3 +1847,5 @@ SceneRoots:
   - {fileID: 992830492}
   - {fileID: 1464903438}
   - {fileID: 866081724}
+  - {fileID: 1414205025}
+  - {fileID: 846595514}
