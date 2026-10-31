@@ -1111,7 +1111,8 @@ MonoBehaviour:
   volumenEfectos: 1
   pasos: {fileID: 0}
   sacarArma: {fileID: 8300000, guid: e2e26fdbb80d44455bf6b77b7b157b13, type: 3}
-  linterna: {fileID: 0}
+  bolillo: {fileID: 8300000, guid: ef820859dc164408b926b8e32244fc60, type: 3}
+  linterna: {fileID: 8300000, guid: c03c87890f9f945789b8c6280b71c2a0, type: 3}
   radio: {fileID: 8300000, guid: 9c2831b19da244d7f94840e1bf1083a0, type: 3}
   jugadorHerido: {fileID: 0}
   jugadorMuere: {fileID: 8300000, guid: f35fb78a1293d4f07a737bfebd5fb1bd, type: 3}
@@ -2389,7 +2390,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &351167772
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4123,7 +4124,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 12a370edc9364ab0a53a88905e8e22c8, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AmmoPickup
   amount: 10
 --- !u!65 &617688037

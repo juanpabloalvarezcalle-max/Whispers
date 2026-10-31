@@ -40,13 +40,15 @@ public class PlayerHealth : MonoBehaviour
 
         if (IsDead)
         {
-            AudioManager.Instance?.ReproducirJugadorMuere(transform.position);
+            float duracionSonidoMuerte = AudioManager.Instance != null
+                ? AudioManager.Instance.ReproducirJugadorMuere(transform.position)
+                : 0f;
             OnDied?.Invoke();
 
-            // No hay una animación de muerte conectada todavía: por ahora,
-            // al llegar a cero se reinicia la escena con el fundido existente.
+            // El fundido empieza al mismo tiempo que el sonido y dura lo mismo.
             if (TransitionManager.Instance != null)
-                TransitionManager.Instance.ReloadLevel();
+                TransitionManager.Instance.ReloadLevel(
+                    duracionSonidoMuerte > 0f ? duracionSonidoMuerte : -1f);
         }
         else
         {

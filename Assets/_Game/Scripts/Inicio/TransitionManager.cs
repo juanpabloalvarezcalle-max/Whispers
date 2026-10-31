@@ -59,16 +59,24 @@ public class TransitionManager : MonoBehaviour
         LoadLevel(SceneManager.GetActiveScene().buildIndex);
     }
 
+    /// <summary>Recarga la escena usando un fundido de salida sincronizado con el sonido de muerte.</summary>
+    public void ReloadLevel(float duracionFundidoSalida)
+    {
+        if (cargando) return;
+        StartCoroutine(Transicion(null, SceneManager.GetActiveScene().buildIndex, duracionFundidoSalida));
+    }
+
     // ---------- Lógica ----------
 
-    private IEnumerator Transicion(string nombre, int indice)
+    private IEnumerator Transicion(string nombre, int indice, float duracionFundidoSalida = -1f)
     {
         cargando = true;
 
         // Bloquea clics mientras dura la transición
         canvasGroup.blocksRaycasts = true;
 
-        yield return Fade(0f, 1f, duracionFadeOut);
+        float duracion = duracionFundidoSalida >= 0f ? duracionFundidoSalida : duracionFadeOut;
+        yield return Fade(0f, 1f, duracion);
 
         // Carga en segundo plano
         AsyncOperation op = !string.IsNullOrEmpty(nombre)

@@ -370,6 +370,7 @@ public class Movement : MonoBehaviour
         golpeBolilloAplicado = false;
         bolilloInicio = Time.time;
         animator.SetTrigger(PunchParameter);
+        AudioManager.Instance?.ReproducirBolillo(transform.position);
     }
 
     private void UpdateBatonAttachment()
