@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Tulle procedural material
-    second: {fileID: -876546973899608171, guid: 17ba838936f88d64ebea02c59dad67cd, type: 3}
+    second: {fileID: 2100000, guid: dce904a4b4ca02e4cb5fad7a6688811e, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
