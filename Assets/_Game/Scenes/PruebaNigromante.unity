@@ -591,7 +591,7 @@ MonoBehaviour:
   ammunitionInventory: {fileID: 50916140}
   muzzle: {fileID: 939629013}
   damage: 35
-  range: 30
+  range: 8
   shotsPerSecond: 3
   sonidoDisparo: {fileID: 8300000, guid: e2e26fdbb80d44455bf6b77b7b157b13, type: 3}
   hitLayers:

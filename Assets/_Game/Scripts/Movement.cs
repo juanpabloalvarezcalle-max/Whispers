@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class Movement : MonoBehaviour
@@ -32,6 +33,7 @@ public class Movement : MonoBehaviour
     private Vector3 aimDirection;
     private bool hasAimDirection;
     private Transform cam;
+    private CameraTargetController cameraTargetController;
     private Transform rightHand;
     private Transform leftHand;
     private Gun testGun;
@@ -102,6 +104,7 @@ public class Movement : MonoBehaviour
         // Se conservan las demás restricciones configuradas en el Rigidbody.
         rb.constraints &= ~RigidbodyConstraints.FreezeRotationY;
         cam = Camera.main.transform;
+        cameraTargetController = FindAnyObjectByType<CameraTargetController>();
         if (animator == null)
         {
             animator = GetComponentInChildren<Animator>();
@@ -113,7 +116,7 @@ public class Movement : MonoBehaviour
         flashlightProp = CacheProp(characterRoot, "linterna");
         radioProp = CacheProp(characterRoot, "Radio");
         batonProp = CacheProp(characterRoot, "Bolillo");
-        testGun = GetComponentInChildren<Gun>();
+        testGun = GetComponentInChildren<Gun>(true);
         lantern = GetComponentInChildren<Lantern>(true);
         if (lantern == null) lantern = FindAnyObjectByType<Lantern>();
         radioStateHash = Animator.StringToHash(radioStateName);
@@ -135,14 +138,41 @@ public class Movement : MonoBehaviour
         right.Normalize();
         float verticalInput = joystick != null ? joystick.Vertical : 0f;
         float horizontalInput = joystick != null ? joystick.Horizontal : 0f;
-#if UNITY_EDITOR
-        // Controles de escritorio disponibles solo mientras se prueba desde Unity.
         if (Keyboard.current != null)
         {
             verticalInput += Keyboard.current.wKey.ReadValue() - Keyboard.current.sKey.ReadValue();
             horizontalInput += Keyboard.current.dKey.ReadValue() - Keyboard.current.aKey.ReadValue();
+
+            // B funciona incluso con el tiempo pausado para poder cerrar una pista abierta.
+            if (Keyboard.current.bKey.wasPressedThisFrame)
+                PistaInteractiva.InteractuarDesdeCamara(cam, transform);
+
+            if (Time.timeScale > 0f)
+            {
+                if (Keyboard.current.rKey.wasPressedThisFrame) testGun?.Reload();
+                if (Keyboard.current.eKey.wasPressedThisFrame) GolpearConBolillo();
+                if (Keyboard.current.pKey.wasPressedThisFrame) UsarRadio();
+            }
         }
-#endif
+
+        if (!Application.isMobilePlatform && Time.timeScale > 0f && Mouse.current != null)
+        {
+            bool sobreUI = Cursor.lockState != CursorLockMode.Locked &&
+                           EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+            bool disparar = Mouse.current.leftButton.wasPressedThisFrame;
+            bool linterna = Mouse.current.rightButton.wasPressedThisFrame;
+
+            if (!sobreUI && (disparar || linterna))
+            {
+                cameraTargetController?.CapturarMouse();
+                if (disparar) testGun?.Shoot();
+                if (linterna)
+                {
+                    if (PistolaSacada) GuardarPistola();
+                    this.lantern?.CambiarLinterna();
+                }
+            }
+        }
         move = forward * verticalInput + right * horizontalInput;
         if (move.sqrMagnitude > 1f)
         {
@@ -170,30 +200,6 @@ public class Movement : MonoBehaviour
         if (armaSacada && segundosParaGuardarArma > 0f && Time.time >= guardarArmaEn)
             GuardarPistola();
             UpdateRadioAttachment();
-
-#if UNITY_EDITOR
-        // Teclas de diagnóstico para probar la pose sin usar la interfaz táctil.
-        if (Keyboard.current != null)
-        {
-            if (Keyboard.current.pKey.wasPressedThisFrame)
-            {
-                bool pistolEquipped = animator != null && animator.GetBool(PistolEquippedParameter);
-                if (pistolEquipped) GuardarPistola();
-                else
-                {
-                    EquiparPistola();
-                    SetApuntando(true);
-                }
-            }
-            if (Keyboard.current.oKey.wasPressedThisFrame) SetApuntando(false);
-            if (Keyboard.current.spaceKey.wasPressedThisFrame) testGun?.Shoot();
-
-            if (Keyboard.current.digit1Key.wasPressedThisFrame) SetPistolTestRotation(Vector3.zero);
-            if (Keyboard.current.digit2Key.wasPressedThisFrame) SetPistolTestRotation(new Vector3(90f, 0f, 0f));
-            if (Keyboard.current.digit3Key.wasPressedThisFrame) SetPistolTestRotation(new Vector3(0f, 90f, 0f));
-            if (Keyboard.current.digit4Key.wasPressedThisFrame) SetPistolTestRotation(new Vector3(0f, 0f, 90f));
-        }
-#endif
 
     }
 
@@ -248,13 +254,6 @@ public class Movement : MonoBehaviour
         direction.y = 0f;
         hasAimDirection = direction.sqrMagnitude > 0.01f;
         aimDirection = hasAimDirection ? direction.normalized : Vector3.zero;
-    }
-
-    private void SetPistolTestRotation(Vector3 rotation)
-    {
-        pistolHandRotation = rotation;
-        Debug.Log($"Ajuste de prueba de pistola: {rotation}");
-        if (pistolPoseActive) EquiparPistola();
     }
 
     // Estos métodos son los "enchufes" que llaman los botones y las mecánicas.

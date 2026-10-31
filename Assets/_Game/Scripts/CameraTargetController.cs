@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
@@ -25,6 +26,12 @@ public class CameraTargetController : MonoBehaviour
     [SerializeField] private float lookAreaStartX = 0.4f;
     [SerializeField] private bool invertY = false;
 
+    [Header("Cámara con ratón")]
+    [Tooltip("Sensibilidad horizontal del ratón, en grados por píxel.")]
+    [SerializeField, Min(0.001f)] private float sensibilidadMouseX = 0.28f;
+    [Tooltip("Sensibilidad vertical del ratón, en grados por píxel.")]
+    [SerializeField, Min(0.001f)] private float sensibilidadMouseY = 0.24f;
+
     [Header("Temblor al disparar")]
     [Tooltip("Ángulo máximo del movimiento de cámara provocado por un disparo.")]
     [SerializeField, Min(0f)] private float temblorDisparo = 0.9f;
@@ -37,6 +44,8 @@ public class CameraTargetController : MonoBehaviour
     private int lookFingerId = -1;
     private float fuerzaTemblor;
     private float tiempoTemblor;
+    private bool controlMouseActivo;
+    private bool ignorarSiguienteDeltaMouse;
 
     public void TemblarPorDisparo()
     {
@@ -53,6 +62,47 @@ public class CameraTargetController : MonoBehaviour
     {
         EnhancedTouchSupport.Disable();
         lookFingerId = -1;
+        LiberarMouse();
+    }
+
+    private void Start()
+    {
+        if (!Application.isMobilePlatform)
+            CapturarMouse();
+    }
+
+    private void Update()
+    {
+        if (Application.isMobilePlatform) return;
+
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            LiberarMouse();
+    }
+
+    private void OnApplicationFocus(bool tieneFoco)
+    {
+        if (!tieneFoco) LiberarMouse();
+    }
+
+    /// <summary>Activa la cámara con ratón y oculta el cursor durante el juego.</summary>
+    public void CapturarMouse()
+    {
+        if (Application.isMobilePlatform) return;
+        if (controlMouseActivo) return;
+
+        controlMouseActivo = true;
+        ignorarSiguienteDeltaMouse = true;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    private void LiberarMouse()
+    {
+        controlMouseActivo = false;
+        if (Application.isMobilePlatform) return;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     void Awake()
@@ -73,6 +123,7 @@ public class CameraTargetController : MonoBehaviour
 
         // Cámara con el dedo (un dedo libre, fuera del joystick y de la UI).
         HandleTouchLook();
+        HandleMouseLook();
 
         // Joystick de cámara opcional: puedes dejarlo o quitarlo del Inspector.
         if (lookJoystick != null)
@@ -90,6 +141,23 @@ public class CameraTargetController : MonoBehaviour
 
         tiempoTemblor += Time.deltaTime;
         fuerzaTemblor = Mathf.MoveTowards(fuerzaTemblor, 0f, Time.deltaTime * 6f);
+    }
+
+    private void HandleMouseLook()
+    {
+        if (Application.isMobilePlatform || !controlMouseActivo || Mouse.current == null || Time.timeScale <= 0f)
+            return;
+
+        if (ignorarSiguienteDeltaMouse)
+        {
+            ignorarSiguienteDeltaMouse = false;
+            return;
+        }
+
+        Vector2 delta = Mouse.current.delta.ReadValue();
+        yaw += delta.x * sensibilidadMouseX;
+        pitch += (invertY ? 1f : -1f) * delta.y * sensibilidadMouseY;
+        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
     }
 
     private void HandleTouchLook()

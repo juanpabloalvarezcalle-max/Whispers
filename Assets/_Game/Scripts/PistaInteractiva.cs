@@ -6,6 +6,7 @@ using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 /// <summary>Abre el panel de una pista al tocar su objeto y lo cierra con el siguiente toque.</summary>
 public class PistaInteractiva : MonoBehaviour
 {
+    private static PistaInteractiva pistaAbierta;
     [Header("Panel de instrucciones")]
     [Tooltip("Arrastra aquí el panel que crearás. Debe empezar desactivado.")]
     [SerializeField] private GameObject panelInstrucciones;
@@ -28,7 +29,7 @@ public class PistaInteractiva : MonoBehaviour
 
     private void OnDisable()
     {
-        ReanudarJuego();
+        Cerrar();
         EnhancedTouchSupport.Disable();
     }
 
@@ -59,8 +60,7 @@ public class PistaInteractiva : MonoBehaviour
         // Cualquier toque posterior cierra el panel, sin importar dónde toque la pantalla.
         if (panelInstrucciones.activeSelf)
         {
-            panelInstrucciones.SetActive(false);
-            ReanudarJuego();
+            Cerrar();
             return;
         }
 
@@ -74,10 +74,60 @@ public class PistaInteractiva : MonoBehaviour
 
         Transform objetoTocado = impacto.collider.transform;
         if (objetoTocado == transform || objetoTocado.IsChildOf(transform))
+            Abrir();
+    }
+
+    /// <summary>Abre la pista que esté frente a la cámara o cierra el panel abierto.</summary>
+    public static bool InteractuarDesdeCamara(Transform camaraJugador, Transform jugador)
+    {
+        if (pistaAbierta != null)
         {
-            PausarJuego();
-            panelInstrucciones.SetActive(true);
+            pistaAbierta.Cerrar();
+            return true;
         }
+
+        if (camaraJugador == null) return false;
+
+        RaycastHit[] impactos = Physics.RaycastAll(camaraJugador.position, camaraJugador.forward, 5f,
+            ~0, QueryTriggerInteraction.Ignore);
+        int impactoMasCercano = -1;
+        float distancia = float.MaxValue;
+        for (int i = 0; i < impactos.Length; i++)
+        {
+            Transform golpeado = impactos[i].collider.transform;
+            if (jugador != null && (golpeado == jugador || golpeado.IsChildOf(jugador))) continue;
+            if (impactos[i].distance < distancia)
+            {
+                distancia = impactos[i].distance;
+                impactoMasCercano = i;
+            }
+        }
+
+        if (impactoMasCercano < 0) return false;
+        PistaInteractiva pista = impactos[impactoMasCercano].collider.GetComponentInParent<PistaInteractiva>();
+        if (pista == null) return false;
+        pista.Abrir();
+        return true;
+    }
+
+    private void Abrir()
+    {
+        if (panelInstrucciones == null)
+        {
+            Debug.LogWarning("PistaInteractiva: asigna el panel de instrucciones en el Inspector.", this);
+            return;
+        }
+        if (pistaAbierta != null && pistaAbierta != this) pistaAbierta.Cerrar();
+        if (!juegoPausadoPorPista) PausarJuego();
+        pistaAbierta = this;
+        panelInstrucciones.SetActive(true);
+    }
+
+    private void Cerrar()
+    {
+        if (panelInstrucciones != null) panelInstrucciones.SetActive(false);
+        if (pistaAbierta == this) pistaAbierta = null;
+        ReanudarJuego();
     }
 
     private float escalaTiempoAnterior = 1f;

@@ -40,6 +40,7 @@ public class EnemyHealth : MonoBehaviour
     private Collider cachedCollider;
 
     public float Current => currentHealth;
+    public float Maximum => maxHealth;
     public float Normalized => Mathf.Clamp01(currentHealth / maxHealth);
     public bool IsDead => currentHealth <= 0f;
 

@@ -1606,6 +1606,8 @@ MonoBehaviour:
   touchSensitivityY: 0.12
   lookAreaStartX: 0.4
   invertY: 0
+  sensibilidadMouseX: 0.28
+  sensibilidadMouseY: 0.24
   temblorDisparo: 0.9
   recuperacionTemblor: 18
   frecuenciaTemblor: 24
@@ -2817,7 +2819,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &351167772
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8935,7 +8937,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8399902357107547652, guid: cee13abbea54949e5b0827a04bb8055d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1301.33
+      value: -1266.5
       objectReference: {fileID: 0}
     - target: {fileID: 8399902357107547652, guid: cee13abbea54949e5b0827a04bb8055d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -11704,7 +11706,7 @@ MonoBehaviour:
   ammunitionInventory: {fileID: 277000005}
   muzzle: {fileID: 277000004}
   damage: 35
-  range: 30
+  range: 8
   shotsPerSecond: 3
   hitLayers:
     serializedVersion: 2

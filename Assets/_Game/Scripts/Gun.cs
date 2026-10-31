@@ -13,7 +13,7 @@ public class Gun : MonoBehaviour
     [Header("Disparo")]
     [SerializeField] private Transform muzzle;
     [SerializeField, Min(0f)] private float damage = 35f;
-    [SerializeField, Min(0.1f)] private float range = 30f;
+    [SerializeField, Min(0.1f)] private float range = 8f;
     [SerializeField, Min(0f)] private float shotsPerSecond = 3f;
     [SerializeField] private LayerMask hitLayers = ~0;
     [SerializeField] private AudioClip sonidoDisparo;
@@ -150,12 +150,12 @@ public class Gun : MonoBehaviour
             Damageable target = hit.collider.GetComponentInParent<Damageable>();
             if (target != null)
             {
-                target.TakeDamage(damage);
+                target.TakeDamage(target.MaximumHealth / 3f + 0.001f);
             }
             else
             {
                 EnemyHealth enemy = hit.collider.GetComponentInParent<EnemyHealth>();
-                if (enemy != null) enemy.TakeDamage(damage);
+                if (enemy != null) enemy.TakeDamage(enemy.Maximum / 3f + 0.001f);
             }
         }
     }
