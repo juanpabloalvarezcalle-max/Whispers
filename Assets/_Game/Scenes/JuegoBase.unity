@@ -1109,7 +1109,12 @@ MonoBehaviour:
   efectosSource: {fileID: 0}
   ambienteSource: {fileID: 0}
   volumenEfectos: 1
-  pasos: {fileID: 0}
+  pasos: {fileID: 8300000, guid: 0725a64ffe792415a86f108065d18325, type: 3}
+  variantesPasos:
+  - {fileID: 8300000, guid: 2d5ef3276c16343eca2af6d5a1bcd8ee, type: 3}
+  - {fileID: 8300000, guid: e1b8597b516ea494a9a3aa4c5395902f, type: 3}
+  - {fileID: 8300000, guid: 57f5bba0195424b42ad9c406a2aa7779, type: 3}
+  - {fileID: 8300000, guid: 949b36753f13245d5a3826f8d73f8a85, type: 3}
   volumenPasos: 1
   sacarArma: {fileID: 8300000, guid: e2e26fdbb80d44455bf6b77b7b157b13, type: 3}
   volumenSacarArma: 1

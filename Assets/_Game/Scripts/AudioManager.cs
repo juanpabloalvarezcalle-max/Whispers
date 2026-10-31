@@ -14,6 +14,8 @@ public class AudioManager : MonoBehaviour
 
     [Header("Jugador")]
     [SerializeField] private AudioClip pasos;
+    [Tooltip("Variantes de pasos que se alternan aleatoriamente con el clip principal.")]
+    [SerializeField] private AudioClip[] variantesPasos;
     [SerializeField, Range(0f, 1f)] private float volumenPasos = 1f;
     [SerializeField] private AudioClip sacarArma;
     [SerializeField, Range(0f, 1f)] private float volumenSacarArma = 1f;
@@ -96,7 +98,35 @@ public class AudioManager : MonoBehaviour
     {
         if (Time.time < siguientePaso) return;
         siguientePaso = Time.time + intervaloPasos;
-        ReproducirEn(pasos, posicion, volumenPasos);
+        AudioClip clip = ElegirPaso();
+        ReproducirEn(clip, posicion, volumenPasos);
+    }
+
+    private AudioClip ElegirPaso()
+    {
+        int cantidad = pasos != null ? 1 : 0;
+        if (variantesPasos != null)
+        {
+            for (int i = 0; i < variantesPasos.Length; i++)
+                if (variantesPasos[i] != null) cantidad++;
+        }
+
+        if (cantidad == 0) return null;
+
+        int elegido = Random.Range(0, cantidad);
+        if (pasos != null)
+        {
+            if (elegido == 0) return pasos;
+            elegido--;
+        }
+
+        for (int i = 0; i < variantesPasos.Length; i++)
+        {
+            if (variantesPasos[i] == null) continue;
+            if (elegido-- == 0) return variantesPasos[i];
+        }
+
+        return pasos;
     }
 
     public void ReproducirSacarArma(Vector3 posicion) => ReproducirEn(sacarArma, posicion, volumenSacarArma);
