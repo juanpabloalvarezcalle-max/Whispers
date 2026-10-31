@@ -95,6 +95,10 @@ public class EnemyHealth : MonoBehaviour
 
     private void Die()
     {
+        GhostEnemy fantasma = GetComponent<GhostEnemy>();
+        if (fantasma == null) fantasma = GetComponentInChildren<GhostEnemy>();
+        PlayerHealth jugador = fantasma != null ? fantasma.Jugador : null;
+
         Active.Remove(this);
 
         // Detiene el movimiento y desactiva los demás scripts (persecución, ataque, visión...).
@@ -119,6 +123,8 @@ public class EnemyHealth : MonoBehaviour
             AudioManager.Instance.ReproducirEnemigoMuere(transform.position);
         else if (audioSource != null && sonidoMuerte != null)
             audioSource.PlayOneShot(sonidoMuerte);
+
+        jugador?.RecuperarVidaPorMatarFantasma();
 
         OnDied?.Invoke();
 

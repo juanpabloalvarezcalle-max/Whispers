@@ -1399,8 +1399,8 @@ MonoBehaviour:
   touchSensitivityY: 0.12
   lookAreaStartX: 0.4
   invertY: 0
-  temblorDisparo: 0.65
-  recuperacionTemblor: 22
+  temblorDisparo: 0.9
+  recuperacionTemblor: 18
   frecuenciaTemblor: 24
 --- !u!1 &216784553
 GameObject:
@@ -2408,7 +2408,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &351167772
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3754,7 +3754,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1738625273198225934, guid: 5575084f849c5fa41aa630d45fda047f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.9
+      value: 0.066
       objectReference: {fileID: 0}
     - target: {fileID: 1738625273198225934, guid: 5575084f849c5fa41aa630d45fda047f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6095,6 +6095,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   maxHealth: 100
   currentHealth: 100
+  porcentajeVidaPorFantasma: 0.1
   OnHealthChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -7899,7 +7900,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1738625273198225934, guid: 5575084f849c5fa41aa630d45fda047f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.9
+      value: 0.066
       objectReference: {fileID: 0}
     - target: {fileID: 1738625273198225934, guid: 5575084f849c5fa41aa630d45fda047f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10839,7 +10840,7 @@ MonoBehaviour:
   proporcionDerrame: 0.2
   batMax: 100
   bateria: 100
-  tasaDescargaPorSegundo: 1.5
+  tasaDescargaPorSegundo: 4
   atenuarConBateria: 1
   inventarioBaterias: {fileID: 0}
   segundosCambioBateria: 3
@@ -13579,7 +13580,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1738625273198225934, guid: 5575084f849c5fa41aa630d45fda047f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.145
+      value: 0.066
       objectReference: {fileID: 0}
     - target: {fileID: 1738625273198225934, guid: 5575084f849c5fa41aa630d45fda047f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -14478,7 +14479,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8399902357107547652, guid: cee13abbea54949e5b0827a04bb8055d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.111
+      value: 0.066
       objectReference: {fileID: 0}
     - target: {fileID: 8399902357107547652, guid: cee13abbea54949e5b0827a04bb8055d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -14535,7 +14536,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1738625273198225934, guid: 5575084f849c5fa41aa630d45fda047f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.145
+      value: 0.066
       objectReference: {fileID: 0}
     - target: {fileID: 1738625273198225934, guid: 5575084f849c5fa41aa630d45fda047f, type: 3}
       propertyPath: m_LocalPosition.z

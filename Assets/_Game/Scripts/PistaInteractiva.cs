@@ -16,6 +16,11 @@ public class PistaInteractiva : MonoBehaviour
     [SerializeField, Min(0.1f)] private float distanciaMaxima = 100f;
     [SerializeField] private LayerMask capasDetectables = ~0;
 
+    private void Awake()
+    {
+        PickupGlow.Aplicar(gameObject, PickupGlow.Tipo.Pista);
+    }
+
     private void OnEnable()
     {
         EnhancedTouchSupport.Enable();

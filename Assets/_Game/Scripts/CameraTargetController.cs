@@ -27,9 +27,9 @@ public class CameraTargetController : MonoBehaviour
 
     [Header("Temblor al disparar")]
     [Tooltip("Ángulo máximo del movimiento de cámara provocado por un disparo.")]
-    [SerializeField, Min(0f)] private float temblorDisparo = 0.65f;
+    [SerializeField, Min(0f)] private float temblorDisparo = 0.9f;
     [Tooltip("Qué tan rápido desaparece el temblor.")]
-    [SerializeField, Min(1f)] private float recuperacionTemblor = 22f;
+    [SerializeField, Min(1f)] private float recuperacionTemblor = 18f;
     [SerializeField, Min(1f)] private float frecuenciaTemblor = 24f;
 
     private float yaw;
@@ -40,7 +40,7 @@ public class CameraTargetController : MonoBehaviour
 
     public void TemblarPorDisparo()
     {
-        fuerzaTemblor = Mathf.Min(fuerzaTemblor + 1f, 1.8f);
+        fuerzaTemblor = Mathf.Min(fuerzaTemblor + 1f, 2.2f);
         tiempoTemblor = 0f;
     }
 
@@ -89,7 +89,7 @@ public class CameraTargetController : MonoBehaviour
         transform.rotation = Quaternion.Euler(pitch + temblorPitch, yaw + temblorYaw, 0f);
 
         tiempoTemblor += Time.deltaTime;
-        fuerzaTemblor = Mathf.MoveTowards(fuerzaTemblor, 0f, Time.deltaTime * 8f);
+        fuerzaTemblor = Mathf.MoveTowards(fuerzaTemblor, 0f, Time.deltaTime * 6f);
     }
 
     private void HandleTouchLook()

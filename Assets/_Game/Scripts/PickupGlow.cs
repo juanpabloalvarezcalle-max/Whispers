@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 /// <summary>Crea una señal luminosa ligera y pulsante para objetos recogibles.</summary>
 public sealed class PickupGlow : MonoBehaviour
 {
-    public enum Tipo { Municion, Bateria }
+    public enum Tipo { Municion, Bateria, Pista }
 
     private static readonly int TintId = Shader.PropertyToID("_Tint");
     private static Mesh beamMesh;
@@ -15,6 +15,8 @@ public sealed class PickupGlow : MonoBehaviour
     private MaterialPropertyBlock propertyBlock;
     private Camera mainCamera;
     private Color color;
+    private float alphaMinimo;
+    private float alphaMaximo;
     private float phase;
     private bool created;
 
@@ -35,9 +37,24 @@ public sealed class PickupGlow : MonoBehaviour
 
     private void Configurar(Tipo tipo)
     {
-        color = tipo == Tipo.Bateria
-            ? new Color(0.62f, 0.9f, 1f, 1f)
-            : new Color(1f, 0.68f, 0.3f, 1f);
+        switch (tipo)
+        {
+            case Tipo.Bateria:
+                color = new Color(0.62f, 0.9f, 1f, 1f);
+                alphaMinimo = 0.18f;
+                alphaMaximo = 0.46f;
+                break;
+            case Tipo.Pista:
+                color = new Color(0.92f, 0.84f, 0.68f, 1f);
+                alphaMinimo = 0.14f;
+                alphaMaximo = 0.36f;
+                break;
+            default:
+                color = new Color(1f, 0.68f, 0.3f, 1f);
+                alphaMinimo = 0.18f;
+                alphaMaximo = 0.46f;
+                break;
+        }
 
         if (created)
             ActualizarColor();
@@ -150,7 +167,7 @@ public sealed class PickupGlow : MonoBehaviour
 
         float pulse = (Mathf.Sin((Time.unscaledTime + phase) * 2.2f) + 1f) * 0.5f;
         Color tint = color;
-        tint.a = Mathf.Lerp(0.18f, 0.46f, pulse);
+        tint.a = Mathf.Lerp(alphaMinimo, alphaMaximo, pulse);
         beamRenderer.GetPropertyBlock(propertyBlock);
         propertyBlock.SetColor(TintId, tint);
         beamRenderer.SetPropertyBlock(propertyBlock);

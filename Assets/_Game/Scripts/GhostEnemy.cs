@@ -73,6 +73,8 @@ public class GhostEnemy : MonoBehaviour
     private bool tieneParamAtaque;
     private readonly RaycastHit[] resultadosVision = new RaycastHit[32];
 
+    public PlayerHealth Jugador => jugador;
+
     private void Awake()
     {
         agente = GetComponent<NavMeshAgent>();

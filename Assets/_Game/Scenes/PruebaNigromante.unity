@@ -155,6 +155,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   maxHealth: 100
   currentHealth: 100
+  porcentajeVidaPorFantasma: 0.1
   OnHealthChanged:
     m_PersistentCalls:
       m_Calls: []

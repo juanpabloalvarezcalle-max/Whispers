@@ -9,6 +9,10 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField, Min(1f)] private float maxHealth = 100f;
     [SerializeField] private float currentHealth = 100f;
 
+    [Header("Recuperación")]
+    [Tooltip("Porcentaje de la vida máxima recuperado al eliminar un fantasma.")]
+    [SerializeField, Range(0f, 1f)] private float porcentajeVidaPorFantasma = 0.1f;
+
     [Header("Eventos")]
     [Tooltip("Emite la vida como porcentaje de 0 a 1 cada vez que cambia.")]
     public UnityEvent<float> OnHealthChanged;
@@ -63,6 +67,13 @@ public class PlayerHealth : MonoBehaviour
 
         currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
         OnHealthChanged?.Invoke(Normalized);
+    }
+
+    /// <summary>Recupera una parte de la vida máxima al eliminar un fantasma.</summary>
+    public void RecuperarVidaPorMatarFantasma()
+    {
+        if (IsDead || porcentajeVidaPorFantasma <= 0f) return;
+        Heal(maxHealth * porcentajeVidaPorFantasma);
     }
 
 #if ENABLE_INPUT_SYSTEM && UNITY_EDITOR
