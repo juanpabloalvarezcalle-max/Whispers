@@ -10,6 +10,11 @@ public class Batery : MonoBehaviour
     [SerializeField] private AudioClip pickupSound;
     [SerializeField, Range(0f, 1f)] private float pickupVolume = 0.8f;
 
+    private void Awake()
+    {
+        PickupGlow.Aplicar(gameObject, PickupGlow.Tipo.Bateria);
+    }
+
     // Al agregar el script, el collider queda como Trigger.
     private void Reset()
     {

@@ -6,6 +6,11 @@ public class AmmoPickup : MonoBehaviour
 {
     [SerializeField, Min(1)] private int amount = 10;
 
+    private void Awake()
+    {
+        PickupGlow.Aplicar(gameObject, PickupGlow.Tipo.Municion);
+    }
+
     private void Reset()
     {
         GetComponent<Collider>().isTrigger = true;
