@@ -30,6 +30,7 @@ public class BossController : MonoBehaviour
     [Header("Movimiento y Patrulla")]
     [SerializeField] private float moveSpeed = 2.5f;
     [SerializeField] private float range = 6f;
+    [SerializeField] private float waitTime = 1f;
     [SerializeField] private Animator animator;
     [SerializeField] private string speedParameter = "Velocidad";
 
@@ -68,6 +69,7 @@ public class BossController : MonoBehaviour
 
     private bool PlayerDead => player != null && player.IsDead;
     private Vector3 AimPoint => player != null ? player.transform.position + Vector3.up * 1.0f : transform.position + transform.forward * 5f;
+
 
     private void Start()
     {
@@ -130,8 +132,14 @@ public class BossController : MonoBehaviour
         else
         {
             currentAnimSpeed = Mathf.Lerp(currentAnimSpeed, 0f, Time.deltaTime * 5f);
-            movingForward = !movingForward;
-            SetNewDestination();
+
+            // Espera un momento antes de elegir el siguiente punto
+            waitTimer += Time.deltaTime;
+            if (waitTimer >= waitTime)
+            {
+                waitTimer = 0f;
+                SetNewDestination();
+            }
         }
 
         SetLocomotion(currentAnimSpeed);
@@ -151,12 +159,13 @@ public class BossController : MonoBehaviour
         }
     }
 
+    private float waitTimer;
+
     private void SetNewDestination()
     {
-        if (movingForward)
-            targetPosition = startPosition + transform.forward * range;
-        else
-            targetPosition = startPosition;
+        // Punto aleatorio dentro de un círculo alrededor del inicio
+        Vector2 offset = Random.insideUnitCircle * range;
+        targetPosition = startPosition + new Vector3(offset.x, 0f, offset.y);
     }
 
     private void SetLocomotion(float value)
@@ -229,17 +238,19 @@ public class BossController : MonoBehaviour
         GameObject projectileObject;
 
         if (spell.prefab != null)
+        {
             projectileObject = Instantiate(spell.prefab, origin, Quaternion.LookRotation(direction));
+        }
         else
+        {
             projectileObject = CreatePlaceholder(PrimitiveType.Sphere, "Hechizo", spell.color, 0.5f, origin, false);
+        }
 
         BossProjectile projectile = projectileObject.GetComponent<BossProjectile>();
         if (projectile == null) projectile = projectileObject.AddComponent<BossProjectile>();
 
         projectile.Launch(direction, spell.speed, spell.damage, spell.lifetime, transform);
     }
-
-    // ---------- INVOCACIONES SEGURAS ----------
 
     private void TriggerSummon()
     {
