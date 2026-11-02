@@ -7,6 +7,7 @@ public class Movement : MonoBehaviour
     [SerializeField] private Joystick joystick;
     [SerializeField] private float speed = 5f;
     [SerializeField] private float rotationSpeed = 540f;
+    [SerializeField, Min(1f)] private float rotationSpeedAiming = 720f;
     [SerializeField, Range(0f, 0.5f)] private float movementDeadZone = 0.15f;
     [SerializeField] private Animator animator;
 
@@ -239,7 +240,7 @@ public class Movement : MonoBehaviour
         if (hasAimDirection && PistolaSacada && aimDirection.sqrMagnitude > 0.01f)
         {
             Quaternion target = Quaternion.LookRotation(aimDirection);
-            rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, target, rotationSpeed * Time.fixedDeltaTime));
+            rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, target, rotationSpeedAiming * Time.fixedDeltaTime));
         }
         else if (move.sqrMagnitude > 0.01f)
         {

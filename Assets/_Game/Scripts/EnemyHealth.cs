@@ -39,12 +39,38 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private AudioClip sonidoImpacto;
     [SerializeField] private AudioClip sonidoMuerte;
 
+    [Header("Visibilidad a distancia")]
+    [Tooltip("Distancia a la que el enemigo empieza a aparecer. La niebla suaviza la entrada visual.")]
+    [SerializeField, Min(1f)] private float distanciaAparicion = 40f;
+    [Tooltip("Margen adicional antes de volver a ocultarlo, para evitar parpadeos en el límite.")]
+    [SerializeField, Min(0f)] private float margenOcultacion = 4f;
+    [Tooltip("Distancia a la que sus luces y brillo alcanzan la intensidad normal.")]
+    [SerializeField, Min(0f)] private float distanciaBrilloCompleto = 24f;
+
     [Header("Eventos")]
     public UnityEvent<float> OnHealthChanged;
     public UnityEvent OnDied;
 
     private float currentHealth;
     private Collider cachedCollider;
+    private PlayerHealth jugadorVisibilidad;
+    private Renderer[] renderersEnemigo;
+    private bool[] renderersHabilitadosOriginalmente;
+    private Light[] lucesEnemigo;
+    private bool[] lucesHabilitadasOriginalmente;
+    private float[] intensidadesOriginales;
+    private readonly List<BrilloMaterial> materialesConBrillo = new List<BrilloMaterial>();
+    private bool visualesActivos;
+    private float proximaActualizacionVisual;
+    private static readonly int GlowId = Shader.PropertyToID("_Glow");
+
+    private sealed class BrilloMaterial
+    {
+        public Renderer renderer;
+        public int indiceMaterial;
+        public float intensidadOriginal;
+        public MaterialPropertyBlock bloque;
+    }
 
     public float Current => currentHealth;
     public float Maximum => maxHealth;
@@ -68,6 +94,102 @@ public class EnemyHealth : MonoBehaviour
         cachedCollider = GetComponentInChildren<Collider>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
+        PrepararVisibilidad();
+    }
+
+    private void Update()
+    {
+        if (IsDead || Time.time < proximaActualizacionVisual) return;
+        proximaActualizacionVisual = Time.time + 0.12f;
+
+        if (jugadorVisibilidad == null)
+            jugadorVisibilidad = FindAnyObjectByType<PlayerHealth>();
+        if (jugadorVisibilidad == null) return;
+
+        float distancia = Vector3.Distance(transform.position, jugadorVisibilidad.transform.position);
+        float ocultarA = distanciaAparicion + margenOcultacion;
+        if (!visualesActivos && distancia <= distanciaAparicion)
+            CambiarVisibilidad(true);
+        else if (visualesActivos && distancia >= ocultarA)
+            CambiarVisibilidad(false);
+
+        float intensidad = Mathf.InverseLerp(distanciaAparicion, distanciaBrilloCompleto, distancia);
+        ActualizarBrillo(intensidad);
+    }
+
+    private void PrepararVisibilidad()
+    {
+        jugadorVisibilidad = FindAnyObjectByType<PlayerHealth>();
+
+        renderersEnemigo = GetComponentsInChildren<Renderer>(true);
+        renderersHabilitadosOriginalmente = new bool[renderersEnemigo.Length];
+        for (int i = 0; i < renderersEnemigo.Length; i++)
+        {
+            Renderer rendererEnemigo = renderersEnemigo[i];
+            renderersHabilitadosOriginalmente[i] = rendererEnemigo.enabled;
+            Material[] materiales = rendererEnemigo.sharedMaterials;
+            for (int j = 0; j < materiales.Length; j++)
+            {
+                Material material = materiales[j];
+                if (material == null || !material.HasProperty(GlowId)) continue;
+
+                MaterialPropertyBlock bloque = new MaterialPropertyBlock();
+                rendererEnemigo.GetPropertyBlock(bloque, j);
+                materialesConBrillo.Add(new BrilloMaterial
+                {
+                    renderer = rendererEnemigo,
+                    indiceMaterial = j,
+                    intensidadOriginal = material.GetFloat(GlowId),
+                    bloque = bloque
+                });
+            }
+        }
+
+        lucesEnemigo = GetComponentsInChildren<Light>(true);
+        lucesHabilitadasOriginalmente = new bool[lucesEnemigo.Length];
+        intensidadesOriginales = new float[lucesEnemigo.Length];
+        for (int i = 0; i < lucesEnemigo.Length; i++)
+        {
+            lucesHabilitadasOriginalmente[i] = lucesEnemigo[i].enabled;
+            intensidadesOriginales[i] = lucesEnemigo[i].intensity;
+        }
+
+        CambiarVisibilidad(false);
+        ActualizarBrillo(0f);
+    }
+
+    private void CambiarVisibilidad(bool visible)
+    {
+        visualesActivos = visible;
+        if (renderersEnemigo != null)
+        {
+            for (int i = 0; i < renderersEnemigo.Length; i++)
+                renderersEnemigo[i].enabled = visible && renderersHabilitadosOriginalmente[i];
+        }
+
+        if (lucesEnemigo != null)
+        {
+            for (int i = 0; i < lucesEnemigo.Length; i++)
+            {
+                lucesEnemigo[i].enabled = visible && lucesHabilitadasOriginalmente[i];
+                if (!visible) lucesEnemigo[i].intensity = 0f;
+            }
+        }
+    }
+
+    private void ActualizarBrillo(float intensidad)
+    {
+        intensidad = Mathf.Clamp01(intensidad);
+        foreach (BrilloMaterial brillo in materialesConBrillo)
+        {
+            if (brillo.renderer == null) continue;
+            brillo.bloque.SetFloat(GlowId, brillo.intensidadOriginal * intensidad);
+            brillo.renderer.SetPropertyBlock(brillo.bloque, brillo.indiceMaterial);
+        }
+
+        if (lucesEnemigo == null) return;
+        for (int i = 0; i < lucesEnemigo.Length; i++)
+            lucesEnemigo[i].intensity = intensidadesOriginales[i] * intensidad;
     }
 
     private void OnEnable()

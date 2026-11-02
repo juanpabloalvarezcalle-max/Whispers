@@ -29,7 +29,7 @@ public class GunAutoAim : MonoBehaviour
         if (!activo || cuerpo == null || boca == null) return false;
 
         EnemyHealth mejor = null;
-        float mejorDistancia = float.MaxValue;
+        float mejorPuntaje = float.MaxValue;
 
         for (int i = 0; i < EnemyHealth.Active.Count; i++)
         {
@@ -40,12 +40,18 @@ public class GunAutoAim : MonoBehaviour
             plano.y = 0f;
             float distancia = plano.magnitude;
 
-            if (distancia > alcance || distancia >= mejorDistancia) continue;
-            if (distancia > 0.01f && Vector3.Angle(cuerpo.forward, plano) > anguloBusqueda * 0.5f) continue;
+            if (distancia > alcance) continue;
+            float angulo = distancia > 0.01f ? Vector3.Angle(cuerpo.forward, plano) : 0f;
+            if (angulo > anguloBusqueda * 0.5f) continue;
             if (!TieneLineaDeTiro(cuerpo, boca.position, enemigo)) continue;
 
+            // Favorece el objetivo más centrado para que la orientación del jugador
+            // acompañe la dirección del disparo con más naturalidad.
+            float puntaje = distancia + angulo * 0.1f;
+            if (puntaje >= mejorPuntaje) continue;
+
             mejor = enemigo;
-            mejorDistancia = distancia;
+            mejorPuntaje = puntaje;
         }
 
         if (mejor == null)
