@@ -24,6 +24,7 @@ public class BossFightEntrance : MonoBehaviour
         }
 
         transitionStarted = true;
+        BossFightAmmoTransfer.Capture(other.GetComponentInParent<PlayerHealth>());
         TransitionManager.Instance.LoadLevel(sceneName);
     }
 
@@ -33,5 +34,33 @@ public class BossFightEntrance : MonoBehaviour
             return true;
 
         return other.transform.root.CompareTag("Player");
+    }
+}
+
+/// <summary>Transfiere la munición restante al nuevo jugador de la escena del boss.</summary>
+public static class BossFightAmmoTransfer
+{
+    private static bool pending;
+    private static int magazineAmmo;
+    private static int reserveAmmo;
+
+    public static void Capture(PlayerHealth player)
+    {
+        if (player == null) return;
+
+        Gun gun = player.GetComponentInChildren<Gun>(true);
+        if (gun == null) return;
+
+        magazineAmmo = gun.AmmunitionInMagazine;
+        reserveAmmo = gun.ReserveAmmo;
+        pending = true;
+    }
+
+    public static void TryApply(Gun gun)
+    {
+        if (!pending || gun == null) return;
+
+        pending = false;
+        gun.RestoreAmmo(magazineAmmo, reserveAmmo);
     }
 }

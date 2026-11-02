@@ -33,4 +33,10 @@ public class AmmoInventory : MonoBehaviour
         ReserveAmmoChanged?.Invoke(reserveAmmo);
         return takenAmount;
     }
+
+    public void SetReserveAmmo(int amount)
+    {
+        reserveAmmo = Mathf.Clamp(amount, 0, maximumReserveAmmo);
+        ReserveAmmoChanged?.Invoke(reserveAmmo);
+    }
 }

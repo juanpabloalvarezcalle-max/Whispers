@@ -57,6 +57,14 @@ public class Gun : MonoBehaviour
     public AmmoInventory Inventory => ammunitionInventory;
     public event Action<int, int> AmmunitionChanged;
 
+    public void RestoreAmmo(int magazine, int reserve)
+    {
+        ammunitionInMagazine = Mathf.Clamp(magazine, 0, magazineCapacity);
+        if (ammunitionInventory != null)
+            ammunitionInventory.SetReserveAmmo(reserve);
+        AmmunitionChanged?.Invoke(ammunitionInMagazine, ReserveAmmo);
+    }
+
     private void Awake()
     {
         if (ammunitionInventory == null) ammunitionInventory = GetComponent<AmmoInventory>();
@@ -64,6 +72,7 @@ public class Gun : MonoBehaviour
         cameraTargetController = FindAnyObjectByType<CameraTargetController>();
         autoAim = GetComponent<GunAutoAim>();
         ammunitionInMagazine = Mathf.Clamp(ammunitionInMagazine, 0, magazineCapacity);
+        BossFightAmmoTransfer.TryApply(this);
         restingLocalPosition = transform.localPosition;
         lastParent = transform.parent;
 
