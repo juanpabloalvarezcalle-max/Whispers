@@ -123,7 +123,7 @@ public class Gun : MonoBehaviour
 
         Transform shotOrigin = muzzle != null ? muzzle : transform;
 
-        // Autoapuntado: si hay un enemigo a la vista, gira al jugador y dirige la bala hacia él.
+        // Autoapuntado: gira al jugador hacia el enemigo cercano si lo hay.
         Vector3 shotDirection = shotOrigin.forward;
         Transform shooterBody = playerMovement != null ? playerMovement.transform : transform.root;
         if (autoAim != null && autoAim.TryAim(shooterBody, shotOrigin, out Vector3 aimPoint))
@@ -134,30 +134,48 @@ public class Gun : MonoBehaviour
         AmmunitionChanged?.Invoke(ammunitionInMagazine, ReserveAmmo);
         currentRecoil = recoilDistance;
         cameraTargetController?.TemblarPorDisparo();
+
         if (sonidoDisparo != null)
-        {
-            // Cada disparo usa una fuente temporal independiente para que las
-            // pulsaciones rápidas no corten ni bloqueen la reproducción anterior.
             AudioSource.PlayClipAtPoint(sonidoDisparo, shotOrigin.position, shotVolume);
-        }
 
         PlayMuzzleFlash(shotOrigin);
 
+        // 1. Autoapuntado: daña directamente al enemigo vivo más cercano dentro del alcance.
+        EnemyHealth objetivo = EnemigoMasCercano(shotOrigin.position, range);
+        if (objetivo != null)
+        {
+            objetivo.TakeDamage(objetivo.DanoPorBala);
+            return;
+        }
+
+        // 2. Si no hay enemigos cerca, dispara con el rayo normal (paredes, terreno, etc.).
         if (TryGetWorldHit(shotOrigin.position, shotDirection, out RaycastHit hit))
         {
             PlayImpactEffect(hit);
 
             Damageable target = hit.collider.GetComponentInParent<Damageable>();
             if (target != null)
-            {
                 target.TakeDamage(target.MaximumHealth / 3f + 0.001f);
-            }
-            else
-            {
-                EnemyHealth enemy = hit.collider.GetComponentInParent<EnemyHealth>();
-                if (enemy != null) enemy.TakeDamage(enemy.Maximum / 3f + 0.001f);
-            }
         }
+    }
+
+    private EnemyHealth EnemigoMasCercano(Vector3 origen, float alcance)
+    {
+        EnemyHealth mejor = null;
+        float mejorDistancia = float.MaxValue;
+
+        foreach (EnemyHealth enemigo in EnemyHealth.Active)
+        {
+            if (enemigo == null || enemigo.IsDead) continue;
+
+            float distancia = Vector3.Distance(origen, enemigo.AimPoint);
+            if (distancia > alcance || distancia >= mejorDistancia) continue;
+
+            mejor = enemigo;
+            mejorDistancia = distancia;
+        }
+
+        return mejor;
     }
 
     private bool TryGetWorldHit(Vector3 origin, Vector3 direction, out RaycastHit closestHit)

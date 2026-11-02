@@ -19,6 +19,10 @@ public class EnemyHealth : MonoBehaviour
     [Tooltip("Punto al que apunta el autoapuntado (por ejemplo, el pecho). Si se deja vacío, usa el centro del collider.")]
     [SerializeField] private Transform puntoDeApuntado;
 
+    [Tooltip("Daño por bala. 0 = automático (vida máxima / 3). Para el boss pon 10 y morirá con 10 balas.")]
+    [SerializeField, Min(0f)] private float danoPorBala = 0f;
+    public float DanoPorBala => danoPorBala > 0f ? danoPorBala : maxHealth / 3f + 0.001f;
+
     [Header("Muerte")]
     [SerializeField] private Animator animator;
     [Tooltip("Parámetro Trigger de la animación de muerte (opcional).")]

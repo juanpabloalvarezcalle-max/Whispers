@@ -243,8 +243,13 @@ public class Movement : MonoBehaviour
         }
         else if (move.sqrMagnitude > 0.01f)
         {
-            Quaternion target = Quaternion.LookRotation(move);
-            rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, target, rotationSpeed * Time.fixedDeltaTime));
+            // Si el joystick va hacia atrás, el personaje conserva su orientación y camina de reversa
+            bool haciaAtras = Vector3.Dot(move.normalized, transform.forward) < -0.5f;
+            if (!haciaAtras)
+            {
+                Quaternion target = Quaternion.LookRotation(move);
+                rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, target, rotationSpeed * Time.fixedDeltaTime));
+            }
         }
     }
 

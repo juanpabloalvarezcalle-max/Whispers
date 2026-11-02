@@ -3,7 +3,17 @@ guid: 32d00379f53a38c47abe39b9a6413be6
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Ghost
+    second: {fileID: 2100000, guid: e69d61ba51dc1b04ea2741b196871435, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: White fabric
+    second: {fileID: 2100000, guid: a18a3bb6e98b07a43964dbd67fa29f22, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
