@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BossDeath : MonoBehaviour
 {
@@ -13,6 +15,17 @@ public class BossDeath : MonoBehaviour
     [SerializeField] private SpriteRenderer barra;
     [SerializeField, Min(0.01f)] private float anchoTotal = 1f;
 
+    [Header("Cambio de escena al morir")]
+    [Tooltip("Nombre exacto de la escena que se carga después de morir.")]
+    [SerializeField] private string escenaSiguiente;
+    [Tooltip("Segundos de espera tras la muerte antes de empezar el fundido.")]
+    [SerializeField, Min(0f)] private float esperaAntesDeCambiar = 3f;
+
+    [Header("Fundido a negro")]
+    [Tooltip("CanvasGroup del panel negro (alpha 0 al inicio).")]
+    [SerializeField] private CanvasGroup fundido;
+    [SerializeField, Min(0.1f)] private float duracionFundido = 1.5f;
+
     private float altoOriginal;
 
     private void Awake()
@@ -24,6 +37,12 @@ public class BossDeath : MonoBehaviour
         {
             barra.drawMode = SpriteDrawMode.Sliced;
             altoOriginal = barra.size.y;
+        }
+
+        if (fundido != null)
+        {
+            fundido.alpha = 0f;
+            fundido.blocksRaycasts = false;
         }
     }
 
@@ -43,9 +62,31 @@ public class BossDeath : MonoBehaviour
 
     private void Morir()
     {
-        Debug.Log("BossDeath: activando muerte");
         if (animator != null)
             animator.SetBool(parametroMuerte, true);
+
+        if (!string.IsNullOrEmpty(escenaSiguiente))
+            StartCoroutine(CambiarEscena());
+    }
+
+    private IEnumerator CambiarEscena()
+    {
+        yield return new WaitForSeconds(esperaAntesDeCambiar);
+
+        if (fundido != null)
+        {
+            fundido.blocksRaycasts = true;
+            float t = 0f;
+            while (t < duracionFundido)
+            {
+                t += Time.deltaTime;
+                fundido.alpha = Mathf.Clamp01(t / duracionFundido);
+                yield return null;
+            }
+            fundido.alpha = 1f;
+        }
+
+        SceneManager.LoadScene(escenaSiguiente);
     }
 
     private void ActualizarBarra(float normalizado)
