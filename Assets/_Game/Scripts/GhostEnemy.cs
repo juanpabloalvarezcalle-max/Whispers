@@ -41,9 +41,9 @@ public class GhostEnemy : MonoBehaviour
     [SerializeField, Min(0.2f)] private float tiempoEntreAtaques = 2f;
     [Tooltip("Duración total de la animación de ataque. Mientras dura, el zombi no se mueve.")]
     [SerializeField, Min(0.1f)] private float duracionAtaque = 1.2f;
-    [Tooltip("Activado: el daño se aplica cuando la animación llama al evento AplicarGolpe(). Desactivado: se aplica solo tras 'retrasoGolpe'.")]
+    [Tooltip("Activado: la animación puede aplicar el daño en el frame exacto. Si el evento no llega, se usa 'retrasoGolpe' como respaldo.")]
     [SerializeField] private bool usarEventoDeAnimacion = true;
-    [Tooltip("Solo se usa si no hay evento de animación.")]
+    [Tooltip("Retraso del golpe automático y respaldo si falta el evento de animación.")]
     [SerializeField, Min(0f)] private float retrasoGolpe = 0.5f;
     [Tooltip("Margen extra al momento del impacto: si te alejaste más que distanciaAtaque + este margen, el golpe falla.")]
     [SerializeField, Min(0f)] private float margenImpacto = 0.5f;
@@ -136,7 +136,9 @@ public class GhostEnemy : MonoBehaviour
             case Estado.Atacando:
                 MirarAlJugador(0.5f);
 
-                if (usarEventoDeAnimacion == false && golpeAplicado == false && Time.time >= momentoGolpeAutomatico)
+                // El evento sincroniza el impacto con la animación, pero algunos
+                // clips no lo incluyen. El retraso automático evita ataques inocuos.
+                if (!golpeAplicado && Time.time >= momentoGolpeAutomatico)
                     AplicarGolpe();
 
                 if (Time.time >= finAtaque)
@@ -224,7 +226,11 @@ public class GhostEnemy : MonoBehaviour
         golpeAplicado = false;
         proximoAtaque = Time.time + tiempoEntreAtaques;
         finAtaque = Time.time + duracionAtaque;
-        momentoGolpeAutomatico = Time.time + retrasoGolpe;
+        float retrasoRespaldo = retrasoGolpe;
+        if (usarEventoDeAnimacion && animator != null && tieneParamAtaque)
+            retrasoRespaldo = Mathf.Max(retrasoRespaldo, duracionAtaque * 0.8f);
+        retrasoRespaldo = Mathf.Min(retrasoRespaldo, Mathf.Max(0f, duracionAtaque - 0.05f));
+        momentoGolpeAutomatico = Time.time + retrasoRespaldo;
 
         agente.isStopped = true;
         agente.velocity = Vector3.zero;

@@ -155,6 +155,66 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1837126148}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &177097886
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 177097888}
+  - component: {fileID: 177097887}
+  m_Layer: 0
+  m_Name: CameraTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &177097887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 177097886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef27d6f24e98f4daf91937e044c48070, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CameraTargetController
+  player: {fileID: 1768285600}
+  lookJoystick: {fileID: 0}
+  heightOffset: 1.05
+  sensitivityX: 120
+  sensitivityY: 80
+  minPitch: 0
+  maxPitch: 45
+  touchSensitivityX: 0.15
+  touchSensitivityY: 0.12
+  lookAreaStartX: 0.4
+  invertY: 0
+  sensibilidadMouseX: 0.28
+  sensibilidadMouseY: 0.24
+  temblorDisparo: 0.9
+  recuperacionTemblor: 18
+  frecuenciaTemblor: 24
+--- !u!4 &177097888
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 177097886}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.32, y: 1.99, z: -15.26}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &268883081 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8632055958874330854, guid: d4bb45ccbbadb9b408e70e20d605ac11, type: 3}
@@ -882,7 +942,7 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 1768285600}
+    TrackingTarget: {fileID: 177097888}
     LookAtTarget: {fileID: 0}
     CustomLookAtTarget: 0
   Lens:
@@ -2428,3 +2488,4 @@ SceneRoots:
   - {fileID: 1539857435}
   - {fileID: 1264961345}
   - {fileID: 1002976784}
+  - {fileID: 177097888}
