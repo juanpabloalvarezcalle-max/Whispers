@@ -62,6 +62,9 @@ public class BossDeath : MonoBehaviour
 
     private void Morir()
     {
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.ReproducirBossMuere(transform.position);
+
         if (animator != null)
             animator.SetBool(parametroMuerte, true);
 

@@ -135,8 +135,8 @@ public class Gun : MonoBehaviour
         currentRecoil = recoilDistance;
         cameraTargetController?.TemblarPorDisparo();
 
-        if (sonidoDisparo != null)
-            AudioSource.PlayClipAtPoint(sonidoDisparo, shotOrigin.position, shotVolume);
+        if (sonidoDisparo != null && shotAudioSource != null)
+            shotAudioSource.PlayOneShot(sonidoDisparo, shotVolume);
 
         PlayMuzzleFlash(shotOrigin);
 

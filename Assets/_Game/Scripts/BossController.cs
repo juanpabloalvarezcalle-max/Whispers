@@ -185,6 +185,9 @@ public class BossController : MonoBehaviour
         if (animator != null && !string.IsNullOrEmpty(castTrigger))
             animator.SetTrigger(castTrigger);
 
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.ReproducirBossLanzaAtaque(transform.position);
+
         yield return new WaitForSeconds(0.4f);
 
         int count = Mathf.Max(1, spell.projectiles);

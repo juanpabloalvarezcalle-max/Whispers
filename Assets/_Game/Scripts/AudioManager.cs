@@ -44,6 +44,12 @@ public class AudioManager : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float volumenBoss = 1f;
     [SerializeField] private AudioClip bossHerido;
     [SerializeField, Range(0f, 1f)] private float volumenBossHerido = 1f;
+    [Tooltip("Primer sonido que acompaña la animación de lanzamiento del boss.")]
+    [SerializeField] private AudioClip bossLanzaAtaque1;
+    [SerializeField, Range(0f, 1f)] private float volumenBossLanzaAtaque1 = 1f;
+    [Tooltip("Segundo sonido que acompaña la animación de lanzamiento del boss.")]
+    [SerializeField] private AudioClip bossLanzaAtaque2;
+    [SerializeField, Range(0f, 1f)] private float volumenBossLanzaAtaque2 = 1f;
     [SerializeField] private AudioClip bossMuere;
     [SerializeField, Range(0f, 1f)] private float volumenBossMuere = 1f;
 
@@ -138,6 +144,11 @@ public class AudioManager : MonoBehaviour
     public void ReproducirEnemigoMuere(Vector3 posicion) => ReproducirEn(enemigoMuere, posicion, volumenEnemigoMuere);
     public void ReproducirBoss(Vector3 posicion) => ReproducirEn(boss, posicion, volumenBoss);
     public void ReproducirBossHerido(Vector3 posicion) => ReproducirEn(bossHerido, posicion, volumenBossHerido);
+    public void ReproducirBossLanzaAtaque(Vector3 posicion)
+    {
+        ReproducirEn(bossLanzaAtaque1, posicion, volumenBossLanzaAtaque1);
+        ReproducirEn(bossLanzaAtaque2, posicion, volumenBossLanzaAtaque2);
+    }
     public void ReproducirBossMuere(Vector3 posicion) => ReproducirEn(bossMuere, posicion, volumenBossMuere);
     public void ReproducirJugadorHerido(Vector3 posicion) => ReproducirEn(jugadorHerido, posicion, volumenJugadorHerido);
 
