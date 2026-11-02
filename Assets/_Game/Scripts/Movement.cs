@@ -454,7 +454,7 @@ public class Movement : MonoBehaviour
         }
 
         if (objetivo != null)
-            objetivo.TakeDamage(danoBolillo);
+            objetivo.TakeDamage(danoBolillo * objetivo.MultiplicadorDanoBolillo);
     }
     private void UpdateRadioAttachment()
     {

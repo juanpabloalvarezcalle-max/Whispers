@@ -21,7 +21,10 @@ public class EnemyHealth : MonoBehaviour
 
     [Tooltip("Daño por bala. 0 = automático (vida máxima / 3). Para el boss pon 10 y morirá con 10 balas.")]
     [SerializeField, Min(0f)] private float danoPorBala = 0f;
+    [Tooltip("Multiplicador del daño del bolillo. Permite ajustar la resistencia al bolillo por enemigo.")]
+    [SerializeField, Range(0f, 2f)] private float multiplicadorDanoBolillo = 1f;
     public float DanoPorBala => danoPorBala > 0f ? danoPorBala : maxHealth / 3f + 0.001f;
+    public float MultiplicadorDanoBolillo => multiplicadorDanoBolillo;
 
     [Header("Muerte")]
     [SerializeField] private Animator animator;

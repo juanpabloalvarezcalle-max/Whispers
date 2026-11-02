@@ -2536,9 +2536,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8107b6e3cf0cf458da280cc5b914b451, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  maxHealth: 120
+  maxHealth: 150
   puntoDeApuntado: {fileID: 2485108781980444502}
   danoPorBala: 10
+  multiplicadorDanoBolillo: 0.65
   animator: {fileID: 2485108781980444508}
   parametroMuerte: Die
   destruirAlMorir: 0
