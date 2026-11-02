@@ -144,7 +144,7 @@ public class Gun : MonoBehaviour
         EnemyHealth objetivo = EnemigoMasCercano(shotOrigin.position, range);
         if (objetivo != null)
         {
-            objetivo.TakeDamage(objetivo.Maximum / 3f + 0.001f);
+            objetivo.TakeDamage(objetivo.DanoPorBala);
             return;
         }
 
